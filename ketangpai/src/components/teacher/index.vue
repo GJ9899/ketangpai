@@ -147,19 +147,19 @@
       </div>
     </el-dialog>
     <!--中间课程列表-->
-    <div class="ktcon2 cl hide" id="viewer-container-lists" data-course-count="50">
-      <dl class="ktdl1 ktpx1" data-id="MDAwMDAwMDAwMLR2vd2Gz7dp" data-issys="0" data-color="#318eeb">
+    <div class="ktcon2 cl hide"  data-course-count="50">
+      <dl class="ktdl1 ktpx1" id="viewer-container-lists" data-color="#318eeb"  v-for="(item,index) in course">
         <dt style="background:url(//assets.ketangpai.com/theme/student/min/03.png)" class="bgclass2">
           <strong>
-            <a title="java" class="jumpToCourse" data-id="MDAwMDAwMDAwMLR2vd2Gz7dp" @click="jumpToCourse">java</a>
-            <span title="三班">三班</span>
+            <a title="java" class="jumpToCourse" data-id="MDAwMDAwMDAwMLR2vd2Gz7dp" @click="jumpToCourse(item.id)">{{ item.courseName }}</a>
+            <span>{{ item.className}}</span>
           </strong>
           <div class="invitecode">
             <div class="qrcode">
               <i class="iconfont iconketangma1" data-role="0"></i>
             </div>
             <div class="down-menu" data-role="0">
-              加课码：<span class="code" data-code="5TZB7V">5TZB7V</span>
+              加课码：<span class="code" data-code="5TZB7V">{{ item.addCode }}</span>
               <div class="selecon cl" style="display: none;">
                 <ul>
                   <li class="hide2"><a class="stop-course-code" data-code="MDAwMDAwMDAwMLR2vd2Gz7dp" href="">停用</a></li>
@@ -169,21 +169,29 @@
               </div>
             </div>
           </div>
-          <span class="time">2019-2020<br>第一学期</span>
+          <span class="time">2019-2020<br>{{ item.semester }}</span>
           <div class="bigDiv learncl">
             <div class="squr"></div>
-            <div class="ju">学</div>
+            <div class="ju" v-if="item.createrId == userId">学</div>
+            <div class="ju" v-else>教</div>
           </div>
           <div class="zhidings zhidings-two">
             <a href="">置顶</a>
           </div>
-          <a class="kdmore" @click="hasKdcgd()">
+          <a class="kdmore" @click="hasKdcgd(index)">
             <span>更多</span>
             <i></i>
           </a>
-          <ul class="kdcgd" id="kdcgd">
+          <ul class="kdcgd" :id="kdcgb(index)" v-if="item.createrId == userId">
             <li class="kdli3" id="kdli3" @click="deleteCourse">退课</li>
             <li class="kdli2" id="kdli2" @click="">归档</li>
+          </ul>
+          <ul class="kdcgd" :id="kdcgb(index)" v-else>
+            <li class="kdli3" id="kdli3" @click="">编辑</li>
+            <li class="kdli2" id="kdli2" @click="">删除</li>
+            <li class="kdli2" id="kdli4" @click="">归档</li>
+            <li class="kdli2" id="kdli5" @click="">复制课程</li>
+            <li class="kdli2" id="kdli6" @click="">打包下载</li>
           </ul>
         </dt>
         <dd>
@@ -191,12 +199,12 @@
             <li class="off"><span>近期作业</span></li>
             <li>
               <span title="作业名称2">
-                <a href="">作业名称2</a>
+                <a>作业名称2</a>
               </span>
             </li>      
             <li>
               <span title="作业名称（做个课堂派）">
-                <a href="">作业名称（做个课堂派）</a>
+                <a>作业名称（做个课堂派）</a>
               </span>
             </li>
           </ul>
@@ -295,6 +303,7 @@
 <script>
 import $ from 'jquery'
 import editor from 'vue-quill-editor'
+import {Message} from 'element-ui'
 
 export default {
   name: 'TIndex',
@@ -348,7 +357,18 @@ export default {
       }
     };
     return{
-      
+      userId:'',
+      course:{
+        id:'',
+        courseName:'',
+        className:'',
+        year:'',
+        semester:'',
+        conditions:'',
+        createrId:'',
+        createTime:'',
+        addCode:''
+      },
       options1:[{
         value:'2020-2021',
         lable:'2020-2021'
@@ -555,6 +575,9 @@ export default {
     }
   },
   mounted(){
+    let userId = sessionStorage.getItem("userId");
+    this.userId = userId;
+    this.showCourse();
   },
   methods:{
     //展开选择框
@@ -596,15 +619,39 @@ export default {
           condition = condition.substr(0,condition.length-1);
           let createrId = sessionStorage.getItem("userId");
           const params = {
+            createrId:this.userId,
             courseName:courseName,
             className:className,
             year:year,
             semester:semester,
-            condition:condition,
+            conditions:condition,
             createrId:createrId
           }
           console.log(params);
+          this.$axios.post('api/course/addCourse',params)
+          .then(res =>{
+            console.log(res.data);
+            //创建成功
+            if(res.data.message == 'success'){
+              Message.success("创建成功！");
+              this.resetForm(formName);
+              this.dialogVisible = false;
+              //显示所有课程
+              this.showCourse();
+            }
+            else{
+              Message.warning("创建失败！");
+            }
+          })
         }
+      })
+    },
+    //显示所有课程
+    showCourse(){
+      this.$axios.get('api/course/showCourse')
+      .then(res =>{
+        this.course = res.data.data;
+        console.log(this.course)
       })
     },
     //加入课程
@@ -632,14 +679,17 @@ export default {
       this.dialogVisible2 = true;
     },
     //课程-更多：退课、归档
-    hasKdcgd(){
-      let target = document.getElementById("kdcgd");
+    hasKdcgd(index){
+      let target = document.getElementById("kdcgb"+index);
       if(target.style.display=="none"){
         target.style.display="block";
       }
       else{
         target.style.display="none"
       }
+    },
+    kdcgb(index){
+      return "kdcgb"+index;
     },
     //退课
     deleteCourse(){
@@ -687,8 +737,8 @@ export default {
       })
     },
     //跳转到课程详情页面
-    jumpToCourse(){
-      this.$router.push({name:'THomework'});
+    jumpToCourse(id){
+      this.$router.push({name:'THomework',params:{id:id}});
     },
     //跳转到课堂页面
     jumpToClassroom(){
@@ -793,12 +843,14 @@ a {
     margin: 24px auto;
 }
 .ktcon-right-button1{
+    background-color: white;
     top: 143px;
-    left: 1176px;
+    left:1144px;
     box-shadow: 1px 2px 3px rgba(0,0,0,.2);
     width: 134px;
     height: 99px;
     position: absolute;
+    z-index: 10;
     
 }
 .ktcon-right-button1 ul{
@@ -867,10 +919,9 @@ a {
 .ktcon2 {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
     height: 100%;
     overflow: hidden;
-    padding: 0px 4% 100px;
+    padding: 0px 0px 47px 20px;
 }
 .ktcon2 dl.ktdl1 {
     width: 270px;
@@ -1199,6 +1250,10 @@ dl dt strong>span {
 /*发布作业*/
 .publishWork /deep/ .el-dialog__body{
   padding: 30px 60px;
+}
+#viewer-container-lists{
+  display: inline-block;
+  margin-left: 33px;
 }
 
 </style>

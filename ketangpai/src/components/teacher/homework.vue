@@ -5,7 +5,7 @@
       <div class="top-left">
         <el-breadcrumb separator-class="el-icon-arrow-right" class="display">
           <el-breadcrumb-item :to="{ path: '/' }">课堂</el-breadcrumb-item>
-          <el-breadcrumb-item>六级英语  117030803</el-breadcrumb-item>
+          <el-breadcrumb-item>{{ course.courseName}}  {{ course.className}}</el-breadcrumb-item>
         </el-breadcrumb>
       </div>
       <div class="top-right">
@@ -20,16 +20,16 @@
       </div>
       <div class="topm-2">
         <div class="topmall" style="margin-left:40px">
-          <h1 class="display" style="position:relative;top:20px">六级英语</h1>
+          <h1 class="display" style="position:relative;top:20px">{{ course.courseName}}</h1>
           <img src="../../assets/picture/edit-course.png" class="topm-2-img display">
-          <h2>117030803</h2>
+          <h2>{{ course.className}}</h2>
           <div class="topm-box" style="float:left;margin-top: -8px;margin-left: -5px;">
             <span class="sele">
               <span><img src="../../assets/picture/qrcodehover.png" class="box-img1"></span>
               <span class="box-word">加课二维码</span>
             </span>
             <span class="sele">
-              <span class="box-word">加课码:7E995H</span>
+              <span class="box-word">加课码:{{course.addCode}}</span>
               <span><i class="iconfont iconzhucebuchongxinxidanchuang-xiala"></i></span>
             </span>
             <span class="sele" @click="jumpToCourseMember">
@@ -138,7 +138,27 @@
     name: 'homework',
     data () {
       return {
+        id:'',
+        course:{
+          id:'',
+          courseName:'',
+          className:'',
+          year:'',
+          semester:'',
+          conditions:'',
+          createrId:'',
+          createTime:'',
+          addCode:''
+        }
       }
+    },
+    mounted(){
+      let id = this.$route.params.id;
+      console.log("id=" + id);
+      this.$axios.get('api/course/getCourseById?id='+id)
+      .then(res =>{
+        this.course = res.data;
+      })
     },
     methods: {
       //进入作业详情

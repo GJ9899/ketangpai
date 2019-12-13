@@ -156,7 +156,7 @@ export default {
             password:password,
             roleId:identifyId
           }
-          console.log(teacher);
+          console.log("..."+teacher);
           this.$axios.post('api/teacher/register',teacher)
           .then(res => {
             if(res.data.message == 'success'){
