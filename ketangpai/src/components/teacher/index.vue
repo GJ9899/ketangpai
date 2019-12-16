@@ -65,46 +65,47 @@
     </div>
     <!--创建课程弹窗-->
     <div class="addCourse">
-      <el-dialog title="新建课程" :visible.sync="dialogVisible" width="50%">
-        <el-form :model="form" ref="form" :rules="rules" label-width="80px" style="margin-left:80px">
-          <el-form-item label="课程名称" prop="courseName">
-            <el-input v-model="form.courseName" placeholder="请输入课程名称" style="width:443px"></el-input>
-          </el-form-item>
-          <el-form-item label="班级名称" prop="className">
-            <el-input v-model="form.className" placeholder="请输入班级名称(选填)" style="width:443px"></el-input>
-          </el-form-item>
-          <el-form-item label="选择学期">
-            <el-select v-model="value1" placeholder="请选择年份">
-              <el-option
-                v-for="item in options1"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
-            <el-select v-model="value2" placeholder="请选择学期">
-              <el-option
-                v-for="item in options2"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <p style="color:grey;font-size:13px;margin-left:12px">学生必须额外填写下列信息才能加入课程</p>
-          <el-form-item>
-            <el-checkbox-group v-model="checkList" style="margin-left:12px">
-              <el-checkbox label="自然班级"></el-checkbox>
-              <el-checkbox label="年级"></el-checkbox>
-              <el-checkbox label="入学年月"></el-checkbox>
-            </el-checkbox-group>
-          </el-form-item>
-          
-          <el-form-item style="margin-left: 290px;">
-            <el-button type="primary" @click="submitCourse('form')">创建</el-button>
-            <el-button @click="resetForm('form')">取消</el-button>
-          </el-form-item>
-        </el-form>
+      <el-dialog :title="operation" :visible.sync="dialogVisible" width="50%">
+          <el-form :model="form" ref="form" :rules="rules" label-width="80px" style="margin-left:80px">
+            <el-form-item label="课程名称" prop="courseName">
+              <el-input v-model="form.courseName" placeholder="请输入课程名称" style="width:443px"></el-input>
+            </el-form-item>
+            <el-form-item label="班级名称" prop="className">
+              <el-input v-model="form.className" placeholder="请输入班级名称(选填)" style="width:443px"></el-input>
+            </el-form-item>
+            <el-form-item label="选择学期">
+              <el-select v-model="value1" placeholder="请选择年份">
+                <el-option
+                  v-for="item in options1"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+              <el-select v-model="value2" placeholder="请选择学期">
+                <el-option
+                  v-for="item in options2"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <p style="color:grey;font-size:13px;margin-left:12px">学生必须额外填写下列信息才能加入课程</p>
+            <el-form-item>
+              <el-checkbox-group v-model="checkList" style="margin-left:12px">
+                <el-checkbox label="自然班级"></el-checkbox>
+                <el-checkbox label="年级"></el-checkbox>
+                <el-checkbox label="入学年月"></el-checkbox>
+              </el-checkbox-group>
+            </el-form-item>
+            
+            <el-form-item style="margin-left: 290px;">
+              <el-button type="primary" @click="submitCourse('form')" v-if="operation=='创建课程'">创建</el-button>
+              <el-button type="primary" @click="editCourse('form')" v-if="operation == '编辑课程'">确定</el-button>
+              <el-button @click="resetForm('form')">取消</el-button>
+            </el-form-item>
+          </el-form>
       </el-dialog>
     </div>
     <el-dialog
@@ -172,7 +173,7 @@
           <span class="time">2019-2020<br>{{ item.semester }}</span>
           <div class="bigDiv learncl">
             <div class="squr"></div>
-            <div class="ju" v-if="item.createrId == userId">学</div>
+            <div class="ju" v-if="item.createrId != userId">学</div>
             <div class="ju" v-else>教</div>
           </div>
           <div class="zhidings zhidings-two">
@@ -182,13 +183,13 @@
             <span>更多</span>
             <i></i>
           </a>
-          <ul class="kdcgd" :id="kdcgb(index)" v-if="item.createrId == userId">
-            <li class="kdli3" id="kdli3" @click="deleteCourse">退课</li>
+          <ul class="kdcgd" :id="kdcgb(index)" v-if="item.createrId != userId">
+            <li class="kdli3" id="kdli3" @click="deleteCourse(item.courseName,item.id)">退课</li>
             <li class="kdli2" id="kdli2" @click="">归档</li>
           </ul>
           <ul class="kdcgd" :id="kdcgb(index)" v-else>
-            <li class="kdli3" id="kdli3" @click="">编辑</li>
-            <li class="kdli2" id="kdli2" @click="">删除</li>
+            <li class="kdli3" id="kdli3" @click="openEditCase(item.id,index)">编辑</li>
+            <li class="kdli2" id="kdli2" @click="deleteCourse(item.courseName,item.id)">删除</li>
             <li class="kdli2" id="kdli4" @click="">归档</li>
             <li class="kdli2" id="kdli5" @click="">复制课程</li>
             <li class="kdli2" id="kdli6" @click="">打包下载</li>
@@ -220,7 +221,7 @@
     <!--退课弹窗-->
     <el-dialog :visible.sync="dialogVisible3" class="deleteKt" width="30%">
       <div class="" style="position:relative;bottom:20px">
-        <p class="deleteKt1">确定要退课java吗？</p>
+        <p class="deleteKt1">确定要退课{{deleteCourseName}}吗？</p>
         <p class="deleteKt2">您的这个课程的任何信息或评论将被永久删除</p>
         <p class="deleteKt3" style="color:red">警告：此操作无法撤销</p>
         <p class="deleteKt4" style="color:blue">提醒：已用课程数包含“删除课程数”</p>
@@ -269,12 +270,12 @@
         <el-form-item label="是否查重" prop="needCheck" class="display" style="width:150px">
           <el-switch v-model="ruleForm.needCheck"></el-switch>
         </el-form-item>
-        <el-form-item  label="查重警戒值" prop="checkAlertValue" class="display" style="width:236px">
+        <el-form-item  label="查重警戒值" prop="checkAlertValue" class="display" style="width:236px" v-if="ruleForm.needCheck == true">
           <el-input v-model="ruleForm.checkAlertValue" style="width:150px">
             <template slot="append">%</template>
           </el-input>
         </el-form-item>
-        <el-form-item prop="duplicateCheckingRate" style="margin-left: 154px;">
+        <el-form-item prop="duplicateCheckingRate" style="margin-left: 154px;" v-if="ruleForm.needCheck == true">
           <el-checkbox>查重率高于</el-checkbox>
           <el-input v-model="ruleForm.duplicateCheckingRate"  style="width:200px">
             <template slot="append">%自动打回</template>
@@ -286,8 +287,7 @@
         
         <el-form-item prop="publishCourseObject" label="发布课程对象">
           <el-select v-model="ruleForm.publishCourseObject" placeholder="请选择要发布到的课程">
-            <el-option disabled value="请选择"></el-option>
-            <option v-for="item in courseList">{{item}}</option>
+            <el-option v-for="(item,index) in courseList" :key="item" :value="index" :label="item">{{item}}</el-option>
           </el-select>
         </el-form-item>
         <el-form-item style="margin-left:400px">
@@ -356,6 +356,9 @@ export default {
       }
     };
     return{
+      allCourse:{},
+      courseId:'',
+      deleteCourseName:'',
       userId:'',
       courseList:[],
       course:{
@@ -406,9 +409,9 @@ export default {
         introduce:'',
         endDate:'',
         endTime:'23:00',
-        forbidSubmit:'',
+        forbidSubmit:true,
         bestScore:'',
-        needCheck:'',
+        needCheck:true,
         checkAlertValue:50,
         duplicateCheckingRate:50,
         publishCourseObject:''
@@ -573,12 +576,13 @@ export default {
         lable:'23:30'
       },],
       options4:'',
+      operation:''
     }
   },
   mounted(){
     let userId = sessionStorage.getItem("userId");
     this.userId = userId;
-    this.showCourse();
+    this.showCourse(userId);
   },
   methods:{
     //展开选择框
@@ -593,7 +597,9 @@ export default {
     },
     //打开创建课程弹窗
     createCourse(){
+      this.operation = '创建课程';
       this.dialogVisible = true;
+      console.log(this.operation);
     },
     //打开添加课程弹窗
     addCourse(){
@@ -638,7 +644,7 @@ export default {
               this.resetForm(formName);
               this.dialogVisible = false;
               //显示所有课程
-              this.showCourse();
+              this.showCourse(this.userId);
             }
             else{
               Message.warning("创建失败！");
@@ -648,10 +654,11 @@ export default {
       })
     },
     //显示所有课程
-    showCourse(){
-      this.$axios.get('api/course/showCourse')
+    showCourse(id){
+      this.$axios.get('api/course/showCourse?id='+id)
       .then(res =>{
         this.course = res.data.data;
+        this.allCourse = res.data.data;
         for(let i = 0; i < this.course.length;i++){
           this.courseList.push(res.data.data[i].courseName);
         }
@@ -696,8 +703,12 @@ export default {
       return "kdcgb"+index;
     },
     //退课
-    deleteCourse(){
+    deleteCourse(courseName,id){
+      this.courseId = id;
+      console.log(id);
+      this.deleteCourseName = courseName;
       this.dialogVisible3 = true;
+      
     },
     //取消退课
     resetDeleteKt(){
@@ -707,6 +718,18 @@ export default {
     //确认退课
     deleteKt(){
       let password = this.deleteKt5;
+      let courseId = this.courseId;
+      let userId = sessionStorage.getItem("userId");
+      const params = {
+        courseId:courseId,
+        password:password,
+        userId:userId
+      }
+      console.log(params);
+      this.$axios.post('api/course/deleteCourse',params)
+      .then(res =>{
+        console.log(res.data);
+      })
     },
     //发布作业弹窗
     hasPublishHomework(){
@@ -714,19 +737,28 @@ export default {
     },
     //发布作业
     publishHomework(formName){
+      console.log(this.ruleForm.publishCourseObject);
       this.$refs[formName].validate(valid => {
         if(valid){
           let homeworkName = this.ruleForm.homeworkName;
           let introduce = this.ruleForm.introduce;
           let bestScore = this.ruleForm.bestScore;
-          let endDate = this.ruleForm.endDate;
+          let endDate = this.formatDate(this.ruleForm.endDate);
           let endTime = this.ruleForm.endTime;
           let forbidSubmit = this.ruleForm.forbidSubmit;
           let needCheck = this.ruleForm.needCheck;
           let checkAlertValue = this.ruleForm.checkAlertValue;
           let duplicateCheckingRate = this.ruleForm.duplicateCheckingRate;
-          let publishCourseObject = this.ruleForm.publishCourseObject;
+          let publishObject = this.ruleForm.publishCourseObject;
+          console.log("..."+publishObject);
+          let courseObject = this.allCourse[publishObject].id;
+          let publishTime = this.formatDate1(new Date());
+          if(needCheck == false){
+            checkAlertValue = 0;
+            duplicateCheckingRate = 0;
+          }
           const params = {
+            teacherId:sessionStorage.getItem("userId"),
             homeworkName:homeworkName,
             introduce:introduce,
             bestScore:bestScore,
@@ -735,12 +767,62 @@ export default {
             forbidSubmit:forbidSubmit,
             needCheck:needCheck,
             checkAlertValue:checkAlertValue,
-            duplicateCheckingRate:duplicateCheckingRate,
-            publishCourseObject:publishHomework
+            dumplicateCheckRate:duplicateCheckingRate,
+            publishCourseObject:courseObject
           }
           console.log(params);
+          this.$axios.post('api/homework/addHomework',params)
+          .then(res =>{
+            console.log(res.data);
+            if(res.data.message == "success"){
+              this.$refs[formName].resetFields();
+              this.dialogVisible2 = false;
+              this.dialogVisible4 = false;
+              Message.success("发布成功");
+            }
+            else{
+              Message.warning("发布失败");
+            }
+          })
         }
       })
+    },
+    //格式化时间
+    formatDate(date){
+      let year = date.getFullYear();
+      let month = date.getMonth();
+      let day = date.getDate();
+      if(month < 10){
+        month = "0" + month;
+      }
+      if(day < 10){
+        day = "0" + day;
+      }
+      return year + "-" + month + "-" + day;
+    },
+    formatDate1(date){
+      let year = date.getFullYear();
+      let month = date.getMonth();
+      let day = date.getDate();
+      if(month < 10){
+        month = "0" + month;
+      }
+      if(day < 10){
+        day = "0" + day;
+      }
+      let hour = date.getHours();
+      if(hour < 10){
+        hour = "0" + hour;
+      }
+      let minute = date.getMinutes();
+      if(minute < 10){
+        minute = "0" + minute;
+      }
+      let second = date.getSeconds();
+      if(second < 10){
+        second = "0" + second;
+      }
+      return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second; 
     },
     //跳转到课程详情页面
     jumpToCourse(id){
@@ -749,6 +831,59 @@ export default {
     //跳转到课堂页面
     jumpToClassroom(){
       this.$router.push({nane:'TIndex'});
+    },
+    //打开编辑课程弹窗
+    openEditCase(id,index){
+      this.courseId = id;
+      console.log(index);
+      this.operation = '编辑课程';
+      this.dialogVisible = true;
+      console.log(this.allCourse[index]);
+      this.form.courseName = this.allCourse[index].courseName;
+      this.form.className = this.allCourse[index].className;
+      this.value1 = this.allCourse[index].year;
+      this.value2 = this.allCourse[index].semester;  
+      let condition = this.allCourse[index].conditions.split(",");
+      for(let i = 0; i < condition.length; i++){
+        this.checkList[i] = condition[i];
+      }
+    },
+    //编辑课程
+    editCourse(formName){
+      this.$refs[formName].validate(valid => {
+        if(valid){
+          let courseId = this.courseId;
+          let courseName = this.form.courseName;
+          let className = this.form.className;
+          let year = this.value1;
+          let semester = this.value2;
+          let condition = "";
+          for(let i = 0; i <this.checkList.length;i++){
+            condition += this.checkList[i]+","
+          }
+          condition = condition.substr(0,condition.length-1);
+          const params = {
+            courseId:courseId,
+            courseName:courseName,
+            className:className,
+            year:year,
+            semester:semester,
+            conditions:condition
+          }
+          console.log(params);
+          this.$axios.post('api/course/editCourse',params)
+          .then(res =>{
+            console.log(res.data);
+            if(res.data.message == 'success'){
+              this.dialogVisible = false;
+              this.showCourse(this.userId);
+            }
+            else{
+              Message.warning("修改失败");
+            }
+          })
+        }
+      })
     }
   }
 }
@@ -851,7 +986,7 @@ a {
 .ktcon-right-button1{
     background-color: white;
     top: 143px;
-    left:1144px;
+    left:1163px;
     box-shadow: 1px 2px 3px rgba(0,0,0,.2);
     width: 134px;
     height: 99px;
