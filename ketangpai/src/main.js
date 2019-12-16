@@ -8,6 +8,7 @@ import 'element-ui/lib/theme-chalk/index.css';
 import axios from 'axios'
 import 'jquery'
 import editor from '@/components/editor'
+// import store from './store'
 
 Vue.prototype.$axios = axios
 Vue.config.productionTip = false
@@ -30,7 +31,7 @@ axios.interceptors.response.use(response =>{
       case 403:
         alert("非法的数据访问，请重新登录");
         router.replace({
-          path:'login'
+          path:'/login'
         })
     }
     //返回接口返回的错误信息
@@ -44,5 +45,23 @@ new Vue({
   router,
   axios,
   components: { App,editor },
-  template: '<App/>'
+  template: '<App/>',
+  // store
 })
+
+// router.beforeEach((to,from,next) => {
+//   if(to.meta.requireAuth){
+//     if(store.state.token){
+//       next();
+//     }
+//     else{
+//       next({
+//         path:'/login',
+//         query:{redirect:to.fullPath}
+//       })
+//     }
+//   }
+//   else{
+//     next();
+//   }
+// })

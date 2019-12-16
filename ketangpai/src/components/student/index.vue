@@ -55,18 +55,18 @@
     </el-dialog>
     <!--作业列表-->
     <div class="ktcon2 cl hide" id="viewer-container-lists" data-course-count="50">
-      <dl class="ktdl1 ktpx1" data-id="MDAwMDAwMDAwMLR2vd2Gz7dp" data-issys="0" data-color="#318eeb">
+      <dl class="ktdl1 ktpx1" data-id="MDAwMDAwMDAwMLR2vd2Gz7dp" data-issys="0" data-color="#318eeb" v-for="(item,index) in course">
         <dt style="background:url(//assets.ketangpai.com/theme/student/min/03.png)" class="bgclass2">
           <strong>
-            <a title="java" class="jumpToCourse" data-id="MDAwMDAwMDAwMLR2vd2Gz7dp" @click="jumpToCourse">java</a>
-            <span title="三班">三班</span>
+            <a title="java" class="jumpToCourse" data-id="MDAwMDAwMDAwMLR2vd2Gz7dp" @click="jumpToCourse">{{item.courseName}}</a>
+            <span>{{ item.className }}</span>
           </strong>
           <div class="invitecode">
             <div class="qrcode">
               <i class="iconfont iconketangma1" data-role="0"></i>
             </div>
             <div class="down-menu" data-role="0">
-              加课码：<span class="code" data-code="5TZB7V">5TZB7V</span>
+              加课码：<span class="code">{{item.addCode}}</span>
               <div class="selecon cl" style="display: none;">
                 <ul>
                   <li class="hide2"><a class="stop-course-code" data-code="MDAwMDAwMDAwMLR2vd2Gz7dp">停用</a></li>
@@ -76,7 +76,7 @@
               </div>
             </div>
           </div>
-          <span class="time">2019-2020<br>第一学期</span>
+          <span class="time">{{item.year}}<br>{{item.semester}}</span>
           <div class="bigDiv learncl">
             <div class="squr"></div>
             <div class="ju">学</div>
@@ -84,13 +84,13 @@
           <div class="zhidings zhidings-two">
             <a>置顶</a>
           </div>
-          <a class="kdmore" @click="hasKdcgd()">
+          <a class="kdmore" @click="hasKdcgd(index)">
             <span>更多</span>
             <i></i>
           </a>
-          <ul class="kdcgd" id="kdcgd">
+          <ul class="kdcgd" :id="kdcgb(index)">
             <li class="kdli3" id="kdli3" @click="deleteCourse">退课</li>
-            <li class="kdli2" id="kdli2" @click="openpigeonholeCase">归档</li>
+            <li class="kdli2" id="kdli2" @click="">归档</li>
           </ul>
         </dt>
         <dd>
@@ -144,6 +144,7 @@
 </template>
 
 <script>
+import {Message} from 'element-ui'
 export default {
   name: 'SIndex',
   data(){
@@ -153,7 +154,23 @@ export default {
       dialogVisible3:false,
       dialogVisible4:false,
       deleteKt5:'',
+      userId:'',
+      course:{
+        id:'',
+        courseName:'',
+        className:'',
+        year:'',
+        semester:'',
+        conditions:'',
+        createrId:'',
+        createTime:'',
+        addCode:''
+      },
     }
+  },
+  mounted(){
+    //获取所以已选课程
+    this.getAllCourse();
   },
   methods:{
     //打开添加课程弹窗
@@ -168,17 +185,49 @@ export default {
     //加入课程
     submitAddCourse(){
       let identifyCourse = this.courseIdentifyCase;
+      let selecterId = sessionStorage.getItem("userId");
+      const params = {
+        addCode:identifyCourse,
+        selecterId:selecterId
+      }
       console.log(identifyCourse);
-      this.courseIdentifyCase = '';
-      this.dialogVisible1 = false;
+      this.$axios.post('api/selectionCourse/selectCourse',params)
+      .then(res => {
+        console.log(res.data);
+        if(res.data.message == '你已经选了这门课程'){
+          Message.warning("你已选过此课程");
+        }
+        else if(res.data.message == '课程不存在'){
+          Message.warning("该课程码不存在或已失效");
+        }
+        else{
+          Message.success("加课成功");
+          this.getAllCourse();
+          this.courseIdentifyCase = '';
+          this.dialogVisible1 = false;
+        }
+      })
+      
+    },
+    //获取全部选课
+    getAllCourse(){
+      let selecterId = sessionStorage.getItem("userId");
+      this.$axios.get('api/selectionCourse/getAllCourse?selecterId='+selecterId)
+      .then(res =>{
+        this.course = res.data.data;
+        console.log(res.data);
+      })
+    },
+    kdcgb(index){
+      return "kdcgb"+index;
     },
     //跳转到课程详情页面
     jumpToCourse(){
       this.$router.push({name:'SHomework'});
     },
     //课程-更多：退课、归档
-    hasKdcgd(){
-      let target = document.getElementById("kdcgd");
+    hasKdcgd(index){
+      let target = document.getElementById("kdcgb"+index);
       if(target.style.display=="none"){
         target.style.display="block";
       }
@@ -310,10 +359,9 @@ a {
 .ktcon2 {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
     height: 100%;
     overflow: hidden;
-    padding: 0px 4% 100px;
+    padding: 0px 0px 47px 20px;
 }
 .ktcon2 dl.ktdl1 {
     width: 270px;
@@ -324,7 +372,7 @@ a {
 }
 .ktcon2 dl {
     position: relative;
-    margin-bottom: 24px;
+    margin: 10px 20px;
 }
 .ktcon2 dl dt {
     clear: both;
@@ -653,5 +701,8 @@ dl dt strong>span {
 .deleteKt6{
   margin-top:20px;
   margin-left: 250px;
+}
+#viewer-container-lists{
+  margin-left: 33px;
 }
 </style>

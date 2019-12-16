@@ -39,8 +39,8 @@
             <i class="iconfont iconxiaoxi1" style="font-size: 32px;color: #5F6368;"></i>
           </a>
         </li>
-        <li class="nav-menu user">
-
+        <li class="nav-menu-item nav-menu user">
+          <img src="../../assets/picture/33 (1).png" style="width:30px;height:30px">
         </li>
       </ul>
     </div>
@@ -237,6 +237,9 @@
         <el-form-item prop="homeworkName">
           <el-input placeholder="作业名称" v-model="ruleForm.homeworkName"></el-input>
         </el-form-item>
+        <el-form-item prop="introduce">
+          <el-input placeholder="作业简介" v-model="ruleForm.introduce"></el-input>
+        </el-form-item>
         <el-form-item id="editor" prop="detialDescription">
           <editor v-model="ruleForm.detialDescription" :options="editorOption"></editor>
         </el-form-item>
@@ -261,7 +264,7 @@
           <el-switch v-model="ruleForm.forbidSubmit"></el-switch>
         </el-form-item>
         <el-form-item label="满分值" prop="bestScore">
-          <el-input placeholder="请填写数值" v-model="ruleForm.bestScore"  style="width:250px"></el-input>
+          <el-input placeholder="请填写数值" v-model.number="ruleForm.bestScore"  style="width:250px"></el-input>
         </el-form-item>
         <el-form-item label="是否查重" prop="needCheck" class="display" style="width:150px">
           <el-switch v-model="ruleForm.needCheck"></el-switch>
@@ -283,12 +286,8 @@
         
         <el-form-item prop="publishCourseObject" label="发布课程对象">
           <el-select v-model="ruleForm.publishCourseObject" placeholder="请选择要发布到的课程">
-            <el-option
-              v-for="item in options4"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
+            <el-option disabled value="请选择"></el-option>
+            <option v-for="item in courseList">{{item}}</option>
           </el-select>
         </el-form-item>
         <el-form-item style="margin-left:400px">
@@ -358,6 +357,7 @@ export default {
     };
     return{
       userId:'',
+      courseList:[],
       course:{
         id:'',
         courseName:'',
@@ -403,6 +403,7 @@ export default {
       },
       ruleForm:{
         homeworkName:'',
+        introduce:'',
         endDate:'',
         endTime:'23:00',
         forbidSubmit:'',
@@ -571,7 +572,7 @@ export default {
         value:'23:30',
         lable:'23:30'
       },],
-      options4:['shuxue','yingyu']
+      options4:'',
     }
   },
   mounted(){
@@ -651,7 +652,10 @@ export default {
       this.$axios.get('api/course/showCourse')
       .then(res =>{
         this.course = res.data.data;
-        console.log(this.course)
+        for(let i = 0; i < this.course.length;i++){
+          this.courseList.push(res.data.data[i].courseName);
+        }
+        console.log(this.course.length)
       })
     },
     //加入课程
@@ -713,6 +717,7 @@ export default {
       this.$refs[formName].validate(valid => {
         if(valid){
           let homeworkName = this.ruleForm.homeworkName;
+          let introduce = this.ruleForm.introduce;
           let bestScore = this.ruleForm.bestScore;
           let endDate = this.ruleForm.endDate;
           let endTime = this.ruleForm.endTime;
@@ -723,6 +728,7 @@ export default {
           let publishCourseObject = this.ruleForm.publishCourseObject;
           const params = {
             homeworkName:homeworkName,
+            introduce:introduce,
             bestScore:bestScore,
             endDate:endDate,
             endTime:endTime,
@@ -819,7 +825,7 @@ a {
 
 .nav-menu-right {
     float: right;
-    margin-right: 134px;
+    margin-right: 65px;
     margin-top: -4px;
 }
 .ktcon-left{

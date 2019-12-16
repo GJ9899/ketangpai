@@ -88,11 +88,15 @@ export default {
             if(acct.data.data != undefined && perms.data.data == undefined){
               Message.success("登录成功");
               sessionStorage.setItem("userId",acct.data.data.id);
+              let data = acct.data.data;
+              // this.$store.commit('set_token',data["Authentication-Token"])
               self.$router.push({name:'TIndex'});
             }
             //学生
             else if(acct.data.data == undefined && perms.data.data != undefined){
-              sessionStorage.setItem("userId",acct.data.data.id);
+              sessionStorage.setItem("userId",perms.data.data.id);
+              let data = perms.data.data;
+              // this.$store.commit('set_token',data["Authentication-Token"])
               Message.success("登录成功");
               self.$router.push({name:'SIndex'});
             }

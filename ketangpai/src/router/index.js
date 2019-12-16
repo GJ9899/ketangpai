@@ -47,52 +47,82 @@ export default new Router({
     {
       path: '/student/index',
       name: 'SIndex',
-      component: SIndex
+      component: SIndex,
+      meta:{
+        requireAuth:true
+      }
     },
     {
       path: '/teacher/index',
       name: 'TIndex',
-      component: TIndex
+      component: TIndex,
+      meta:{
+        requireAuth:true
+      }
     },
     {
       path:'/teacher/course',
       name:'Course',
-      component:Course
+      component:Course,
+      meta:{
+        requireAuth:true
+      }
     },
     {
       path:'/teacher/homework?id=:id',
       name:'THomework',
-      component:THomework
+      component:THomework,
+      meta:{
+        requireAuth:true
+      }
     },
     {
       path:'/student/homework',
       name:'SHomework',
-      component:SHomework
+      component:SHomework,
+      meta:{
+        requireAuth:true
+      }
     },
     {
       path:'/teacher/workInfo',
       name:'WorkInfo',
-      component:WorkInfo
+      component:WorkInfo,
+      meta:{
+        requireAuth:true
+      }
     },
     {
       path:'/teacher/courseMember',
       name:'CourseMember',
-      component:CourseMember
+      component:CourseMember,
+      meta:{
+        requireAuth:true
+      }
     },
     {
       path:'/student/submitWork',
       name:'SubmitWork',
-      component:SubmitWork
+      component:SubmitWork,
+      meta:{
+        requireAuth:true
+      }
     },
     {
       path:'/student/classmate',
       name:'SClassmate',
-      component:SClassmate
+      component:SClassmate,
+      meta:{
+        requireAuth:true
+      }
     },
     {
       path:'/student/grade',
       name:'SGrade',
-      component:SGrade
+      component:SGrade,
+      meta:{
+        requireAuth:true
+      }
     }
   ]
 })
