@@ -4,7 +4,7 @@
     <div class="top">
       <div class="top-left">
         <el-breadcrumb separator-class="el-icon-arrow-right" class="display">
-          <el-breadcrumb-item :to="{ path: '/' }">课堂</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/teacher/index' }">课堂</el-breadcrumb-item>
           <el-breadcrumb-item>{{ course.courseName}}  {{ course.className}}</el-breadcrumb-item>
         </el-breadcrumb>
       </div>
@@ -82,13 +82,13 @@
       </span>
     </div>
 
-    <div class="homework-list">
+    <div class="homework-list" v-for="(item,index) in Array.prototype.reverse.call(homeworkList)">
       <div style="margin: 23px 45px;">
         <div style="float:left">
           <div class="type-left">
           <span style="background:#F1F3F4;padding: 2px 4px;">个人作业</span>
-          <span style="margin-left:15px">19/11/29</span>
-          <span style="margin-left:15px">20:58</span>
+          <span style="margin-left:15px">{{ item.publishTime}}</span>
+          <!-- <span style="margin-left:15px">20:58</span> -->
         </div>
         <div class="type-right">
           <el-popover
@@ -102,12 +102,12 @@
             <el-button slot="reference" class="more"><i class="el-icon-more"></i></el-button>
           </el-popover>
         </div><br>
-        <div class="homework-title" @click="jumpToHomeworkId">英语翻译</div>
-        <div style="margin-top:10px;color:#707070;font-size:14px">翻译一篇短文</div>
+        <div class="homework-title" @click="jumpToHomeworkId">{{ item.homeworkName}}</div>
+        <div style="margin-top:10px;color:#707070;font-size:14px">{{ item.introduce }}</div>
         <div class="homework-end">
           <span>截止日期：</span>
-          <span>19/12/21</span>
-          <span>23:59</span>
+          <span>{{ item.endDate }}</span>
+          <span>{{ item.endTime }}</span>
           <span class="commend">0条讨论</span>
         </div>
         </div>
@@ -149,18 +149,30 @@
           createrId:'',
           createTime:'',
           addCode:''
-        }
+        },
+        homeworkList:{}
       }
     },
     mounted(){
       let id = this.$route.params.id;
+      this.id = id;
       console.log("id=" + id);
       this.$axios.get('api/course/getCourseById?id='+id)
       .then(res =>{
         this.course = res.data;
       })
+      //获取课程作业
+      this.getHomework(this.id);
     },
     methods: {
+      //获取课程作业
+      getHomework(id){
+        this.$axios.get('api/homework/getHomeworkById?id='+id)
+        .then(res =>{
+          console.log(res.data);
+          this.homeworkList = res.data;
+        })
+      },
       //进入作业详情
       jumpToHomeworkId(){
         this.$router.push({name:'WorkInfo'});

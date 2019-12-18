@@ -97,15 +97,11 @@
           <ul>
             <li class="off"><span>近期作业</span></li>
             <li>
-              <span title="作业名称2">
-                <a>作业名称2</a>
+              <span v-for="(id,index1) in courseIdList">
+                <a v-if="id == item.id">{{ homeworkNameList[index1]}}</a>
               </span>
             </li>      
-            <li>
-              <span title="作业名称（做个课堂派）">
-                <a>作业名称（做个课堂派）</a>
-              </span>
-            </li>
+      
           </ul>
           <div class="ddfoot clearfix">
             <div class="user-avatar-area">
@@ -166,15 +162,36 @@ export default {
         createTime:'',
         addCode:''
       },
-      courseList:{}
+      courseList:{},
+      homeworkNameList:[],
+      courseIdList:[],
+      homework:{
+        id:'',
+        homeworkName:''
+      }
     }
   },
   mounted(){
     //获取所以已选课程
     this.getAllCourse();
     this.userId = sessionStorage.getItem("userId");
+    //获取作业信息
+    this.getHomeworkName();
   },
   methods:{
+    //获取作业信息
+    getHomeworkName(){
+      this.$axios.get('api/homework/getStuHomeworkName?studentId=' + this.userId)
+      .then(res => {
+        console.log(res.data);
+        for(let i = 0; i < res.data.length; i++){
+          this.homeworkNameList.push(res.data[i].homeworkName);
+          this.courseIdList.push(res.data[i].courseId);
+        }
+        this.homework = res.data;
+        
+      })
+    },
     //打开添加课程弹窗
     addCourse(){
       this.dialogVisible1 = true;
@@ -205,6 +222,7 @@ export default {
         else{
           Message.success("加课成功");
           this.getAllCourse();
+          this.getHomeworkName();
           this.courseIdentifyCase = '';
           this.dialogVisible1 = false;
         }

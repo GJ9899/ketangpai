@@ -200,15 +200,10 @@
           <ul>
             <li class="off"><span>近期作业</span></li>
             <li>
-              <span title="作业名称2">
-                <a>作业名称2</a>
+              <span v-for="(id,index1) in courseIdList">
+                <a style="cursor:pointer" v-if="id == item.id">{{ homeworkNameList[index1] }}</a>
               </span>
             </li>      
-            <li>
-              <span title="作业名称（做个课堂派）">
-                <a>作业名称（做个课堂派）</a>
-              </span>
-            </li>
           </ul>
           <div class="ddfoot clearfix">
             <div class="user-avatar-area">
@@ -349,7 +344,7 @@ export default {
       }, 500);
     };
     var validatapublishCourseObject = (rule,value,callback) => {
-      if(!value){
+      if(value<0){
         return callback(new Error("发布课程对象不能为空"));
       }
       else{
@@ -423,7 +418,7 @@ export default {
         endDate:[{validator:validateEndDate, trigger:'blur'}],
         endTime:[{validator:validateEndTime, trigger:'blur'}],
         bestScore:[{validator:validateBestScore, trigger:'blur'}],
-        publishCourseObject:[{validator:validatapublishCourseObject, trigger:'blur'}],
+        publishCourseObject:[{validator:validatapublishCourseObject, trigger:'blur'}]
       },
       checkList:[],
       dialogVisible:false,
@@ -577,7 +572,14 @@ export default {
         lable:'23:30'
       },],
       options4:'',
-      operation:''
+      operation:'',
+      homework:{
+        homeworkName:'',
+        courseId:''
+      },
+      homeworkNameList:[],
+      courseIdList:[],
+      optionCourseId:[]
     }
   },
   mounted(){
@@ -586,17 +588,39 @@ export default {
     // this.showCourse(userId);//获取所有教授的课程
     // this.getAllCourse();//获取所有学习的课程
     this.getAllTeacherCourse();
-    
+    //获取课程作业
+    this.getHomeworkName(this.userId);
 
   },
   methods:{
+    //获取课程作业
+    getHomeworkName(userId){
+      this.homeworkNameList = [];
+      this.courseIdList = [];
+      this.$axios.get('api/homework/getHomeworkName?userId='+userId)
+      .then(res => {
+        // console.log("111");
+        // console.log(res.data.data);
+        for(let i = 0; i < res.data.data.length; i++){
+          this.homeworkNameList.push(res.data.data[i].homeworkName);
+          this.courseIdList.push(res.data.data[i].courseId);
+        }
+        // console.log(this.courseIdList);
+      })
+    },
     //获取教师教授的课程、选择的课程
     getAllTeacherCourse(){
+      this.optionCourseId = [];
       this.$axios.get('api/course/getAllCourse?teacherId='+this.userId)
       .then(res => {
         this.course = res.data.data;
         this.allCourse = res.data.data;
         console.log(res.data.data);
+        for(let i = 0; i <res.data.data.length;i++){
+          if(this.userId == res.data.data[i].createrId){
+            this.optionCourseId.push(res.data.data[i].id);
+          }
+        }
       })
     },
     //展开选择框
@@ -613,7 +637,7 @@ export default {
     createCourse(){
       this.operation = '创建课程';
       this.dialogVisible = true;
-      console.log(this.operation);
+      // console.log(this.operation);
     },
     //打开添加课程弹窗
     addCourse(){
@@ -658,7 +682,7 @@ export default {
               this.resetForm(formName);
               this.dialogVisible = false;
               //显示所有课程
-              this.showCourse(this.userId);
+              this.getAllTeacherCourse();
             }
             else{
               Message.warning("创建失败！");
@@ -671,9 +695,12 @@ export default {
     showCourse(id){
       this.$axios.get('api/course/showCourse?id='+id)
       .then(res =>{
-        this.course = res.data.data;
-        this.allCourse = res.data.data;
+        // this.course = res.data.data;
+        // this.allCourse = res.data.data;
+        
         for(let i = 0; i < this.allCourse.length;i++){
+          console.log(res.data.data[i]);
+          this.homework = res.data.data[i];
           this.courseList.push(res.data.data[i].courseName);
         }
         // console.log(this.course.length)
@@ -684,7 +711,7 @@ export default {
       let selecterId = this.userId;
       this.$axios.get('api/selectionCourse/getAllCourse?selecterId='+selecterId)
       .then(res =>{
-        console.log(res.data.data);
+        // console.log(res.data.data);
         this.allCourse = res.data.data;
         // console.log(res.data);
       })
@@ -712,7 +739,7 @@ export default {
           this.getAllTeacherCourse();
           this.courseIdentifyCase = '';
           this.dialogVisible1 = false;
-          console.log(this.allCourse);
+          // console.log(this.allCourse);
         }
       })
     },
@@ -778,10 +805,17 @@ export default {
     //发布作业弹窗
     hasPublishHomework(){
       this.dialogVisible4 = true;
+      this.courseList = [];
+      for(let i = 0; i < this.allCourse.length; i++){
+        if(this.userId == this.allCourse[i].createrId){
+          this.courseList.push(this.allCourse[i].courseName);
+        }
+      }
+      console.log(this.courseList);
     },
     //发布作业
     publishHomework(formName){
-      // console.log(this.ruleForm.publishCourseObject);
+      console.log(this.ruleForm.publishCourseObject);
       this.$refs[formName].validate(valid => {
         if(valid){
           let homeworkName = this.ruleForm.homeworkName;
@@ -795,7 +829,7 @@ export default {
           let duplicateCheckingRate = this.ruleForm.duplicateCheckingRate;
           let publishObject = this.ruleForm.publishCourseObject;
           // console.log("..."+publishObject);
-          let courseObject = this.allCourse[publishObject].id;
+          let courseObject = this.optionCourseId[publishObject];
           let publishTime = this.formatDate1(new Date());
           if(needCheck == false){
             checkAlertValue = 0;
@@ -814,7 +848,7 @@ export default {
             dumplicateCheckRate:duplicateCheckingRate,
             publishCourseObject:courseObject
           }
-          // console.log(params);
+          console.log(".."+params.publishCourseObject);
           this.$axios.post('api/homework/addHomework',params)
           .then(res =>{
             // console.log(res.data);
@@ -823,6 +857,9 @@ export default {
               this.dialogVisible2 = false;
               this.dialogVisible4 = false;
               Message.success("发布成功");
+              this.homeworkNameList = [];
+              this.courseId = '';
+              this.getHomeworkName(this.userId);
             }
             else{
               Message.warning("发布失败");
@@ -830,6 +867,7 @@ export default {
           })
         }
       })
+     
     },
     //格式化时间
     formatDate(date){
@@ -920,7 +958,7 @@ export default {
             // console.log(res.data);
             if(res.data.message == 'success'){
               this.dialogVisible = false;
-              this.showCourse(this.userId);
+              this.getAllTeacherCourse();
             }
             else{
               Message.warning("修改失败");
