@@ -108,6 +108,7 @@
           </el-form>
       </el-dialog>
     </div>
+    <!--加入课程-->
     <el-dialog
       title="加入课程"
       :visible.sync="dialogVisible1"
@@ -582,9 +583,22 @@ export default {
   mounted(){
     let userId = sessionStorage.getItem("userId");
     this.userId = userId;
-    this.showCourse(userId);
+    // this.showCourse(userId);//获取所有教授的课程
+    // this.getAllCourse();//获取所有学习的课程
+    this.getAllTeacherCourse();
+    
+
   },
   methods:{
+    //获取教师教授的课程、选择的课程
+    getAllTeacherCourse(){
+      this.$axios.get('api/course/getAllCourse?teacherId='+this.userId)
+      .then(res => {
+        this.course = res.data.data;
+        this.allCourse = res.data.data;
+        console.log(res.data.data);
+      })
+    },
     //展开选择框
     hasShow(){
       let target = document.getElementById("ktcon-right-button1");
@@ -634,10 +648,10 @@ export default {
             conditions:condition,
             createrId:createrId
           }
-          console.log(params);
+          // console.log(params);
           this.$axios.post('api/course/addCourse',params)
           .then(res =>{
-            console.log(res.data);
+            // console.log(res.data);
             //创建成功
             if(res.data.message == 'success'){
               Message.success("创建成功！");
@@ -653,24 +667,54 @@ export default {
         }
       })
     },
-    //显示所有课程
+    //显示所有自己创建的课程
     showCourse(id){
       this.$axios.get('api/course/showCourse?id='+id)
       .then(res =>{
         this.course = res.data.data;
         this.allCourse = res.data.data;
-        for(let i = 0; i < this.course.length;i++){
+        for(let i = 0; i < this.allCourse.length;i++){
           this.courseList.push(res.data.data[i].courseName);
         }
-        console.log(this.course.length)
+        // console.log(this.course.length)
+      })
+    },
+    //获取全部选课
+    getAllCourse(){
+      let selecterId = this.userId;
+      this.$axios.get('api/selectionCourse/getAllCourse?selecterId='+selecterId)
+      .then(res =>{
+        console.log(res.data.data);
+        this.allCourse = res.data.data;
+        // console.log(res.data);
       })
     },
     //加入课程
     submitAddCourse(){
       let identifyCourse = this.courseIdentifyCase;
-      console.log(identifyCourse);
-      this.courseIdentifyCase = '';
-      this.dialogVisible1 = false;
+      // console.log(identifyCourse);
+      const params = {
+        addCode:identifyCourse,
+        selecterId:this.userId
+      }
+      this.$axios.post('api/selectionCourse/selectCourse',params)
+      .then(res =>{
+        if(res.data.message == '你已经选了这门课程'){
+          Message.warning("你已选过此课程");
+        }
+        else if(res.data.message == '课程不存在'){
+          Message.warning("该课程码不存在或已失效");
+        }
+        else{
+          Message.success("加课成功");
+          // this.getAllCourse();
+          // this.showCourse(this.userId);
+          this.getAllTeacherCourse();
+          this.courseIdentifyCase = '';
+          this.dialogVisible1 = false;
+          console.log(this.allCourse);
+        }
+      })
     },
     //重置表单
     resetForm(formName) {
@@ -705,7 +749,7 @@ export default {
     //退课
     deleteCourse(courseName,id){
       this.courseId = id;
-      console.log(id);
+      // console.log(id);
       this.deleteCourseName = courseName;
       this.dialogVisible3 = true;
       
@@ -725,10 +769,10 @@ export default {
         password:password,
         userId:userId
       }
-      console.log(params);
+      // console.log(params);
       this.$axios.post('api/course/deleteCourse',params)
       .then(res =>{
-        console.log(res.data);
+        // console.log(res.data);
       })
     },
     //发布作业弹窗
@@ -737,7 +781,7 @@ export default {
     },
     //发布作业
     publishHomework(formName){
-      console.log(this.ruleForm.publishCourseObject);
+      // console.log(this.ruleForm.publishCourseObject);
       this.$refs[formName].validate(valid => {
         if(valid){
           let homeworkName = this.ruleForm.homeworkName;
@@ -750,7 +794,7 @@ export default {
           let checkAlertValue = this.ruleForm.checkAlertValue;
           let duplicateCheckingRate = this.ruleForm.duplicateCheckingRate;
           let publishObject = this.ruleForm.publishCourseObject;
-          console.log("..."+publishObject);
+          // console.log("..."+publishObject);
           let courseObject = this.allCourse[publishObject].id;
           let publishTime = this.formatDate1(new Date());
           if(needCheck == false){
@@ -770,10 +814,10 @@ export default {
             dumplicateCheckRate:duplicateCheckingRate,
             publishCourseObject:courseObject
           }
-          console.log(params);
+          // console.log(params);
           this.$axios.post('api/homework/addHomework',params)
           .then(res =>{
-            console.log(res.data);
+            // console.log(res.data);
             if(res.data.message == "success"){
               this.$refs[formName].resetFields();
               this.dialogVisible2 = false;
@@ -835,10 +879,10 @@ export default {
     //打开编辑课程弹窗
     openEditCase(id,index){
       this.courseId = id;
-      console.log(index);
+      // console.log(index);
       this.operation = '编辑课程';
       this.dialogVisible = true;
-      console.log(this.allCourse[index]);
+      // console.log(this.allCourse[index]);
       this.form.courseName = this.allCourse[index].courseName;
       this.form.className = this.allCourse[index].className;
       this.value1 = this.allCourse[index].year;
@@ -870,10 +914,10 @@ export default {
             semester:semester,
             conditions:condition
           }
-          console.log(params);
+          // console.log(params);
           this.$axios.post('api/course/editCourse',params)
           .then(res =>{
-            console.log(res.data);
+            // console.log(res.data);
             if(res.data.message == 'success'){
               this.dialogVisible = false;
               this.showCourse(this.userId);
@@ -986,7 +1030,7 @@ a {
 .ktcon-right-button1{
     background-color: white;
     top: 143px;
-    left:1163px;
+    left:1180px;
     box-shadow: 1px 2px 3px rgba(0,0,0,.2);
     width: 134px;
     height: 99px;

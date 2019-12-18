@@ -166,11 +166,13 @@ export default {
         createTime:'',
         addCode:''
       },
+      courseList:{}
     }
   },
   mounted(){
     //获取所以已选课程
     this.getAllCourse();
+    this.userId = sessionStorage.getItem("userId");
   },
   methods:{
     //打开添加课程弹窗
@@ -185,12 +187,12 @@ export default {
     //加入课程
     submitAddCourse(){
       let identifyCourse = this.courseIdentifyCase;
-      let selecterId = sessionStorage.getItem("userId");
+      let selecterId = this.userId;
       const params = {
         addCode:identifyCourse,
         selecterId:selecterId
       }
-      console.log(identifyCourse);
+      console.log("..."+selecterId);
       this.$axios.post('api/selectionCourse/selectCourse',params)
       .then(res => {
         console.log(res.data);
