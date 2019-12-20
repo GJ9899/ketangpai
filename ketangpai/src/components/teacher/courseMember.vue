@@ -3,7 +3,7 @@
     <div class="header">
       <div class="header-left">
         <span class="header-icon" @click="jumpToHomework"><i class="iconfont iconfanhui" style="font-size:38px;color:#5F6368;"></i></span>
-        <span class="courseName">六级英语</span>
+        <span class="courseName" @click="jumpToHomework">{{ course.courseName}}</span>
       </div>
       <div class="header-center">
         <span>成员</span>
@@ -41,12 +41,12 @@
     <div class="member-cont">
       <div class="box-l">
         <div class="box-group" @click="displayTeam">教学团队(1)</div>
-        <div class="box-group" @click="displayStudent">全部学生(学生2)</div>
+        <div class="box-group" @click="displayStudent">全部学生(学生{{ classmateCount }})</div>
       </div>
       <!--全部学生-->
       <div class="box-r" v-model="role" v-if="this.role=='student'">
         <div class="r-name">
-          <div><p style="margin-left:20px;color: rgba(59,61,69,1);">全部学生(学生2)</p></div>
+          <div><p style="margin-left:20px;color: rgba(59,61,69,1);">全部学生(学生{{ classmateCount }})</p></div>
           <div style="padding-right:30px;padding-top: 15px;">
             <span style="padding-right:20px"><el-checkbox v-model="limit">人数限制</el-checkbox></span>
             <span>
@@ -65,12 +65,13 @@
           <span><el-button type="info" class="btn_message_checked">群发私信</el-button></span>
         </div>
         <!--成员列表-->
-        <div class="data">
+        <div class="data" v-for="(item,index) in studentList">
           <span style="position:relative;bottom:5px"><el-checkbox v-model="checkAll"  class="btn_cbatch"></el-checkbox></span>
           <span><img src="../../assets/picture/25.png" class="avator"></img></span>
-          <span class="stuno">11703080320</span>
-          <span class="name">sunqin</span>
-          <span class="mail">1370097791@qq.com</span>
+          <span class="stuno">{{item.number}}</span>
+          <span class="stuno" v-if="item.number == null" style="margin-left:105px"></span>
+          <span class="name">{{item.name}}</span>
+          <span class="mail">{{item.phoneMail}}</span>
           <span class="natureclass">117030803</span>
           <span class="createtime">19/11/29 21:15</span>
           <span class="opt">
@@ -87,8 +88,8 @@
         </div>
         <div class="data">
           <span><img src="../../assets/picture/25.png" class="avator" style="margin-left:40px"></img></span>
-          <span class="name">刘桂君</span>
-            <span class="mail" style="margin-left:280px">1370097791@qq.com</span>
+          <span class="name">{{teacher.name}}</span>
+            <span class="mail" style="margin-left:280px">{{teacher.phoneMail}}</span>
             <span class="identity">(管理员)</span>
             <span class="opt1">
               <span style="cursor:pointer"><img src="../../assets/picture/sixin.png"></span>
@@ -114,10 +115,66 @@ export default {
       limit:false,
       retire:false,
       checkAll:false,
-      role:'student'
+      role:'team',
+      course:{
+        id:'',
+        courseName:'',
+        className:'',
+        year:'',
+        semester:''
+      },
+      teacher:{
+        id:'',
+        name:'',
+        phoneMail:''
+      },
+      classmateCount:'',
+      studentList:[],
     }
   },
+  mounted(){
+    //获取课程信息
+    this.getCourse();
+    //获取教师信息
+    this.getTeacherInfo();
+    //获取同学数量
+      this.getClassmateCount(sessionStorage.getItem("courseId"));
+    //获取学生列表
+    this.getStudentList(sessionStorage.getItem("courseId"));
+  },
   methods:{
+    //获取学生列表
+    getStudentList(courseId){
+      this.$axios.get('api/student/getStudentList?courseId='+courseId)
+      .then(res =>{
+        console.log(res.data);
+        this.studentList = res.data;
+      })
+    },
+    //获取同学数量
+      getClassmateCount(courseId){
+        this.$axios.get('api/selectionCourse/getClassmateCount?courseId='+courseId)
+        .then(res =>{
+          this.classmateCount = res.data;
+        })
+      },
+    //获取教师信息
+    getTeacherInfo(){
+      let courseId = sessionStorage.getItem("courseId");
+      this.$axios.get('api/teacher/getTeacherInfo?courseId='+courseId)
+      .then(res =>{
+        this.teacher = res.data;
+        console.log(res.data);
+      })
+    },
+    //获取课程信息
+    getCourse(){
+      let courseId = sessionStorage.getItem("courseId");
+      this.$axios.get('api/course/getCourseById?id='+courseId)
+      .then(res =>{
+        this.course = res.data;
+      })
+    },
     //显示教学团队
     displayTeam(){
       this.role = 'team';
@@ -128,7 +185,7 @@ export default {
     },
     //跳转到作业
     jumpToHomework(){
-      this.$router.push({name:'Homework'});
+      this.$router.push({name:'THomework'});
     }
   }
 }
@@ -148,6 +205,7 @@ export default {
   cursor: pointer;
 }
 .courseName{
+  cursor: pointer;
   background: #2c58ab;
   color: white;
   padding: 6px 20px;
@@ -307,25 +365,21 @@ export default {
   font-size: 14px;
     margin-left: 26px;
     position: relative;
-    bottom: 3px;
 }
 .mail{
       font-size: 14px;
     margin-left: 55px;
     position: relative;
-    bottom: 3px;
 }
 .natureclass{
   font-size: 14px;
     margin-left: 25px;
     position: relative;
-    bottom: 3px;
 }
 .createtime{
       font-size: 14px;
     margin-left: 25px;
     position: relative;
-    bottom: 3px;
 }
 .opt{
   margin-left: 90px;

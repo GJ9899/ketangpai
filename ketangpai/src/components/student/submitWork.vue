@@ -4,7 +4,7 @@
     <div class="header">
       <div class="header-left">
         <span class="header-icon" @click="jumpToHomework"><i class="iconfont iconfanhui" style="font-size:38px;color:#5F6368;"></i></span>
-        <span class="courseName" @click="jumpToHomework">六级英语</span>
+        <span class="courseName" @click="jumpToHomework">{{ course.courseName }}</span>
       </div>
       <div class="header-center">
         <span>提交作业</span>
@@ -18,10 +18,10 @@
   </div>
   <div class="gWidth cWidth-new">
     <div class="work-title clearfix">
-      <h3 title="英语翻译">英语翻译</h3>
-      <p>截至日期：<span>19/12/21</span><span>23:59</span></p>
+      <h3>{{ homework.homeworkName}}</h3>
+      <p>截至日期：<span>{{ homework.endDate}}    {{ homework.endTime}}</span></p>
       <p>个人作业</p>
-      <p title="温馨提醒：所有个人作业均需要查重">需要查重</p>
+      <p v-if="homework.needCheck == 'true'">需要查重</p>
       <p class="whohandup"><i class="iconfont iconchengyuantuikexinxi1"></i>查看谁交了</p>
     </div>
   </div>
@@ -52,15 +52,51 @@ export default {
   name: 'SubmitWork',
   data(){
     return{
-
+      course:{
+        id:'',
+        courseName:'',
+        className:'',
+        year:'',
+        semester:''
+      },
+      homework:{
+        id:'',
+        homeworkName:'',
+        endDate:'',
+        endTime:'',
+        needCheck:''
+      }
     }
+  },
+  mounted(){
+    //获取课程信息
+    this.getCourse();
+    //获取作业信息
+    let homeworkId = sessionStorage.getItem("homeworkId");
+    this.getHomework(homeworkId);
   },
   methods:{
     //跳转到作业页面
     jumpToHomework(){
       this.$router.push({name:'SHomework'});
+    },
+    //获取课程信息
+    getCourse(){
+      let courseId = sessionStorage.getItem("courseId");
+      this.$axios.get('api/course/getCourseById?id='+courseId)
+      .then(res =>{
+        this.course = res.data;
+        console.log(res.data);
+      })
+    },
+    //获取作业信息
+    getHomework(homeworkId){
+      this.$axios.get('api/homework/getSubHomeworkbyId?homeworkId='+homeworkId)
+      .then(res => {
+        this.homework = res.data;
+        console.log(res.data);
+      })
     }
-    
   }
 }
 </script>

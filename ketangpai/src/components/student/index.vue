@@ -53,12 +53,12 @@
         <el-button type="primary" @click="submitAddCourse()">加 入</el-button>
       </span>
     </el-dialog>
-    <!--作业列表-->
+    <!--课程列表-->
     <div class="ktcon2 cl hide" id="viewer-container-lists" data-course-count="50">
       <dl class="ktdl1 ktpx1" data-id="MDAwMDAwMDAwMLR2vd2Gz7dp" data-issys="0" data-color="#318eeb" v-for="(item,index) in course">
         <dt style="background:url(//assets.ketangpai.com/theme/student/min/03.png)" class="bgclass2">
           <strong>
-            <a title="java" class="jumpToCourse" data-id="MDAwMDAwMDAwMLR2vd2Gz7dp" @click="jumpToCourse">{{item.courseName}}</a>
+            <a title="java" class="jumpToCourse" data-id="MDAwMDAwMDAwMLR2vd2Gz7dp" @click="jumpToCourse(item.id)">{{item.courseName}}</a>
             <span>{{ item.className }}</span>
           </strong>
           <div class="invitecode">
@@ -242,7 +242,8 @@ export default {
       return "kdcgb"+index;
     },
     //跳转到课程详情页面
-    jumpToCourse(){
+    jumpToCourse(id){
+      sessionStorage.setItem("courseId",id);
       this.$router.push({name:'SHomework'});
     },
     //课程-更多：退课、归档

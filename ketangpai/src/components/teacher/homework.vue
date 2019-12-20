@@ -34,7 +34,7 @@
             </span>
             <span class="sele" @click="jumpToCourseMember">
               <span><i class="iconfont iconchengyuan"></i></span>
-              <span class="box-word">成员 2</span>
+              <span class="box-word">成员 {{ classmateCount }}</span>
             </span>
             <span class="sele">
               <span><i class="iconfont iconshujufenxi"></i></span>
@@ -52,7 +52,7 @@
                   <li>互动个数</li>
               </ul>
               <ul>
-                  <li style="display:block">1</li>
+                  <li style="display:block">{{homeworkList.length}}</li>
                   <li>发布作业</li>
               </ul>
               <ul>
@@ -82,7 +82,7 @@
       </span>
     </div>
 
-    <div class="homework-list" v-for="(item,index) in Array.prototype.reverse.call(homeworkList)">
+    <div class="homework-list" v-for="(item,index) in homeworkList">
       <div style="margin: 23px 45px;">
         <div style="float:left">
           <div class="type-left">
@@ -102,7 +102,7 @@
             <el-button slot="reference" class="more"><i class="el-icon-more"></i></el-button>
           </el-popover>
         </div><br>
-        <div class="homework-title" @click="jumpToHomeworkId">{{ item.homeworkName}}</div>
+        <div class="homework-title" @click="jumpToHomeworkById(index)">{{ item.homeworkName}}</div>
         <div style="margin-top:10px;color:#707070;font-size:14px">{{ item.introduce }}</div>
         <div class="homework-end">
           <span>截止日期：</span>
@@ -150,11 +150,12 @@
           createTime:'',
           addCode:''
         },
-        homeworkList:{}
+        homeworkList:{},
+         classmateCount:''
       }
     },
     mounted(){
-      let id = this.$route.params.id;
+      let id = sessionStorage.getItem("courseId");
       this.id = id;
       console.log("id=" + id);
       this.$axios.get('api/course/getCourseById?id='+id)
@@ -163,8 +164,17 @@
       })
       //获取课程作业
       this.getHomework(this.id);
+      //获取同学数量
+      this.getClassmateCount(id);
     },
     methods: {
+      //获取同学数量
+      getClassmateCount(courseId){
+        this.$axios.get('api/selectionCourse/getClassmateCount?courseId='+courseId)
+        .then(res =>{
+          this.classmateCount = res.data;
+        })
+      },
       //获取课程作业
       getHomework(id){
         this.$axios.get('api/homework/getHomeworkById?id='+id)
@@ -174,7 +184,9 @@
         })
       },
       //进入作业详情
-      jumpToHomeworkId(){
+      jumpToHomeworkById(index){
+        let homeworkId = this.homeworkList[index].id;
+        sessionStorage.setItem("homeworkId",homeworkId);
         this.$router.push({name:'WorkInfo'});
       },
        //跳转到课堂成员页面
@@ -381,6 +393,7 @@
 }
 .homework-title:hover{
   text-decoration: underline;
+  color: #328eeb;
 }
 .homework-end{
   color: #A0A0A0;

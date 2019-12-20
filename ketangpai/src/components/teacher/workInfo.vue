@@ -4,7 +4,7 @@
     <div class="header">
       <div class="header-left">
         <span class="header-icon" @click="jumpToHomework"><i class="iconfont iconfanhui" style="font-size:38px;color:#5F6368;"></i></span>
-        <span class="courseName">六级英语</span>
+        <span class="courseName" @click="jumpToHomework">{{ course.courseName}}</span>
       </div>
       <div class="header-center">
         <span>学生作业</span>
@@ -19,11 +19,11 @@
     <div class="new-page">
       <div class="head-title">
         <div class="homework-title">
-        	<h2 style="float:left;margin-top: -8px;">英语翻译</h2>
+        	<h2 style="float:left;margin-top: -8px;">{{ homework.homeworkName}}</h2>
         	<div class="generate-final-grade" style="font-size:14px">生成期末考成绩</div>
         </div>
         <div class="togsh">
-            <p class="fl">截至&nbsp;&nbsp;12月-21号   23:59</p>
+            <p class="fl">截至&nbsp;&nbsp;{{homework.endDate}}   {{ homework.endTime}}</p>
             <div style="float:right;margin-top:-45px">
               <span class="check"><i class="el-icon-s-tools"></i>&nbsp;&nbsp;查重设置</span>
               <span>
@@ -51,7 +51,7 @@
       </div>
       <div class="reviewwrap">
         <div>
-          <p class="work-tips-info">已筛选出 <span>2</span>人 （全班共2人）</p>
+          <p class="work-tips-info">已筛选出 <span>2</span>人 （全班共{{classmateCount}}人）</p>
           <p class="retract">收起</p>
         </div>
         <div class="work-tips">
@@ -229,12 +229,63 @@ export default {
       givePoints:'',
       download:'',
       managecheck:false,
+      homeworkId:'',
+      course:{
+        id:'',
+        courseName:'',
+        className:'',
+        year:'',
+        semester:''
+      },
+      homework:{
+        id:'',
+        homeworkName:'',
+        endDate:'',
+        endTime:'',
+        needCheck:''
+      },
+      classmateCount:''
     }
   },
+  mounted(){
+    let homeworkId = sessionStorage.getItem("homeworkId");
+    this.homeworkId = homeworkId;
+    //获取作业信息
+    this.getHomeworkInfo();
+    //获取课程信息
+    this.getCourse();
+    //获取同学数量
+    let courseId = sessionStorage.getItem("courseId");
+    this.getClassmateCount(courseId);
+  },
   methods:{
+    //获取同学数量
+      getClassmateCount(courseId){
+        this.$axios.get('api/selectionCourse/getClassmateCount?courseId='+courseId)
+        .then(res =>{
+          this.classmateCount = res.data;
+        })
+      },
+    //获取课程信息
+    getCourse(){
+      let courseId = sessionStorage.getItem("courseId");
+      this.$axios.get('api/course/getCourseById?id='+courseId)
+      .then(res =>{
+        this.course = res.data;
+      })
+    },
+    //获取作业信息
+    getHomeworkInfo(){
+      console.log(this.homeworkId);
+      this.$axios.get('api/homework/getSubHomeworkbyId?homeworkId='+this.homeworkId)
+      .then(res =>{
+        this.homework = res.data;
+        console.log(res.data);
+      })
+    },
     //跳转到作业
     jumpToHomework(){
-      this.$router.push({name:'Homework'});
+      this.$router.push({name:'THomework'});
     }
   }
 }
@@ -346,7 +397,7 @@ export default {
     margin-right: 10px;
     background: rgba(0,0,0,.1);
     font-size: 14px;
-    width: 144px;
+    width: 151px;
     margin-top: -5px;
 }
 .check{

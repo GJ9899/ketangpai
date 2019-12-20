@@ -69,7 +69,7 @@ export default new Router({
       }
     },
     {
-      path:'/teacher/homework?id=:id',
+      path:'/teacher/homework',
       name:'THomework',
       component:THomework,
       meta:{

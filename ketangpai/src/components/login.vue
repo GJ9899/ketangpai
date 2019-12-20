@@ -8,7 +8,7 @@
           <el-input v-model="ruleForm.phone" placeholder="邮箱/手机号"></el-input>
         </el-form-item>
         <el-form-item prop="password">
-          <el-input v-model="ruleForm.password" placeholder="密码"></el-input>
+          <el-input v-model="ruleForm.password" placeholder="密码" show-password></el-input>
         </el-form-item>
         <el-form-item>
           <el-checkbox type="checkBox" v-model="checked" class="rememberPassword">下次自动登录</el-checkbox>

@@ -4,8 +4,8 @@
     <div class="top">
       <div class="top-left">
         <el-breadcrumb separator-class="el-icon-arrow-right" class="display">
-          <el-breadcrumb-item :to="{ path: '/' }">课堂</el-breadcrumb-item>
-          <el-breadcrumb-item>六级英语  117030803</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/student/index' }">课堂</el-breadcrumb-item>
+          <el-breadcrumb-item>{{course.courseName}}  {{course.className}}</el-breadcrumb-item>
         </el-breadcrumb>
       </div>
       <div class="top-right">
@@ -21,21 +21,20 @@
       
       <div class="topm-2">
         <div class="topmall" style="margin-left:40px">
-          <h1 class="display" style="position:relative;top:20px">六级英语</h1>
-          <img src="../../assets/picture/edit-course.png" class="topm-2-img display">
-          <h2>117030803</h2>
+          <h1 class="display" style="position:relative;top:20px">{{course.courseName}}</h1>
+          <h2>{{course.className}}</h2>
           <div class="topm-box" style="float:left;margin-top: -8px;margin-left: -5px;">
             <!-- <span class="sele">
               <span><img src="../../assets/picture/qrcodehover.png" class="box-img1"></span>
               <span class="box-word">加课二维码</span>
             </span> -->
             <span class="sele">
-              <span class="box-word">加课码:7E995H</span>
+              <span class="box-word">加课码:{{course.addCode}}</span>
               <span><i class="iconfont iconzhucebuchongxinxidanchuang-xiala"></i></span>
             </span>
             <span class="sele" @click="jumpToClassmate">
               <span><i class="iconfont iconchengyuan"></i></span>
-              <span class="box-word">同学 2</span>
+              <span class="box-word">同学 {{ classmateCount }}</span>
             </span>
             <!-- <span class="sele">
               <span><i class="iconfont iconshujufenxi"></i></span>
@@ -63,48 +62,32 @@
     <div class="homework-cont width980">
       <div class="homework-list">
         <div class="homework-list clearfix" data-id="MDAwMDAwMDAwMLScy5iIqdFp">
-          <div class="homework-box">
+          <div class="homework-box" v-for="(item,index) in homeworkList">
             <div class="announce-cont-box">
               <div class="title clearfix">
                 <div class="work-type fl" data-time="1573971575">
                   <span>个人作业</span>
-                  <span>19/11/17</span>
-                  <span>14:19</span>  
+                  <span>{{item.publishTime}}</span> 
                 </div>
               </div>
               <div class="announce-cont clearfix" style="position: relative;">
                 <div class="work-new-l fl">
-                  <h3 class="work-title "><a title="JavaEE大作业" @click="jumpToSubmit">JavaEE大作业</a></h3>
+                  <h3 class="work-title "><a @click="jumpToSubmit(index)">{{item.homeworkName}}</a></h3>
                   <div class="word">
-                    <div class="p">基本要求：1. 每位学生独立完成作业，不得抄袭代码。如果不能清楚的解释代码，则被视为抄袭。2. 作业的功能、交互设计、业务逻辑可以参考课堂派，但不要求完全一样。课堂派的功能也不需要完全实现，但是经过简... <a style="color:#318ECB;cursor:pointer">查看全文&gt;</a></div>
-                  </div>
-                  <div class="annex">
-                    <ul class="clearfix">
-                      <li data-id="MDAwMDAwMDAwMLOctZSGuc1rhc6goQ" data-size="2.82MB">
-                        <a data-name="JavaEE大作业要求V0.2.docx" data-url="/PluginApp/to/id/MDAwMDAwMDAwMLOctZSGuc1rhc6goQ/expires/4697513221/sign/e24d4b5ed3d250468784ba5c6e6e36c8ed6c2924.html" data-popurl="" data-down="/File/download/id/MDAwMDAwMDAwMLOctZSGuc1rhc6goQ/expires/4697513221/sign/e24d4b5ed3d250468784ba5c6e6e36c8ed6c2924.html" data-ispic="" data-isvideo="" data-isonline="" data-issb="" class="fileext preview">
-                          <img src="../../assets/picture/file_ext_big_docx.png" data-src="">
-                        </a>
-                        <h4>
-                          <a data-name="JavaEE大作业要求V0.2.docx" data-url="/PluginApp/to/id/MDAwMDAwMDAwMLOctZSGuc1rhc6goQ/expires/4697513221/sign/e24d4b5ed3d250468784ba5c6e6e36c8ed6c2924.html" data-popurl="" data-src="" data-ispic="" data-isvideo="" data-isonline="" data-issb="" class="fileext preview" title="JavaEE大作业要求V0.2.docx">
-                            JavaEE大作业要求V0.2.docx
-                          </a>
-                        </h4>
-                        <a class="download">下载</a>
-                        </li>     
-                    </ul>
+                    <div class="p">{{item.introduce}}<a style="color:#318ECB;cursor:pointer;margin-left: 50px;">查看全文&gt;</a></div>
                   </div>
                 </div>
                 
               </div>
               <div class="comment-new ">
-                <p data-time="1577030340">截止日期：<span>19/12/22</span><b>23:59</b></p>
+                <p data-time="1577030340">截止日期：<span>{{item.endDate}}</span><b>{{item.endTime}}</b></p>
                 <a>
                   <span>0条讨论</span>
                 </a>
               </div>
             
             </div>
-            <div class="uploadwork"><el-button type="primary" @click="jumpToSubmit">上传作业</el-button></div>
+            <div class="uploadwork"><el-button type="primary" @click="jumpToSubmit(item.id)">上传作业</el-button></div>
           </div>
         </div>
       </div>
@@ -118,9 +101,49 @@
     name: 'homework',
     data () {
       return {
+        id:'',
+        course:{
+          id:'',
+          courseName:'',
+          className:'',
+          year:'',
+          semester:'',
+          conditions:'',
+          createrId:'',
+          createTime:'',
+          addCode:''
+        },
+        homeworkList:{},
+        classmateCount:''
       }
     },
+    mounted(){
+      let id = sessionStorage.getItem("courseId");
+      this.id = id;
+      this.$axios.get('api/course/getCourseById?id='+id)
+      .then(res =>{
+        this.course = res.data;
+      })
+      //获取课程作业
+      this.getHomework(this.id);
+      //获取同学数量
+      this.getClassmateCount(id);
+    },
     methods: {
+      //获取同学数量
+      getClassmateCount(courseId){
+        this.$axios.get('api/selectionCourse/getClassmateCount?courseId='+courseId)
+        .then(res =>{
+          this.classmateCount = res.data;
+        })
+      },
+      //获取课程作业
+      getHomework(id){
+        this.$axios.get('api/homework/getHomeworkById?id='+id)
+        .then(res =>{
+          this.homeworkList = res.data;
+        })
+      },
       //进入作业详情
       jumpToHomeworkId(){
         this.$router.push({name:'WorkInfo'});
@@ -130,7 +153,10 @@
         this.$router.push({name:'SClassmate'});
       },
       //跳转到提交作业页面
-      jumpToSubmit(){
+      jumpToSubmit(index){
+        let homeworkId = this.homeworkList[index].id;
+        console.log(homeworkId);
+        sessionStorage.setItem("homeworkId",homeworkId);
         this.$router.push({name:'SubmitWork'});
       },
       //跳转到成绩页面
@@ -254,7 +280,7 @@
     border: 1px solid #E2E6ED;
     border-radius: 8px;
     background: #FFF;
-    height: 316px;
+    height: 185px;
     width: 1166px;
     margin: 20px auto;
 }
@@ -270,9 +296,6 @@
     font-size: 0;
     padding: 21px 0 10px;
     line-height: 30px;
-}
-.fl {
-    float: left;
 }
 .announce-cont-box .title .work-type span:first-child {
     color: #5F6368;
@@ -365,7 +388,7 @@ page .announce-cont-box .announce-cont .word {
 }
 .comment-new p {
     padding-right: 10px;
-    float: left;
+    /* float: left; */
     margin-right: 20px;
     margin-top: -40px;
     color: #A0A0A0;
@@ -378,7 +401,7 @@ page .announce-cont-box .announce-cont .word {
     float: left;
     color: #A0A0A0;
         position: relative;
-    bottom: 40px;
+    bottom: 37px;
     left: 232px;
     cursor: pointer;
 }

@@ -584,6 +584,9 @@ export default {
   },
   mounted(){
     let userId = sessionStorage.getItem("userId");
+    sessionStorage.removeItem("course");
+    sessionStorage.setItem("courseId",null);
+    sessionStorage.setItem("homeworkId",null);
     this.userId = userId;
     // this.showCourse(userId);//获取所有教授的课程
     // this.getAllCourse();//获取所有学习的课程
@@ -597,7 +600,7 @@ export default {
     getHomeworkName(userId){
       this.homeworkNameList = [];
       this.courseIdList = [];
-      this.$axios.get('api/homework/getHomeworkName?userId='+userId)
+      this.$axios.get('api/homework/getHomeworkName')
       .then(res => {
         // console.log("111");
         // console.log(res.data.data);
@@ -908,7 +911,8 @@ export default {
     },
     //跳转到课程详情页面
     jumpToCourse(id){
-      this.$router.push({name:'THomework',params:{id:id}});
+      sessionStorage.setItem("courseId",id);
+      this.$router.push({name:'THomework'});
     },
     //跳转到课堂页面
     jumpToClassroom(){
