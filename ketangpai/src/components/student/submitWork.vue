@@ -44,7 +44,7 @@
     <span class="log1">查看提交日志></span>
   </div>
 </div>
-  
+
 </template>
 
 <script>
@@ -78,6 +78,7 @@ export default {
   methods:{
     //跳转到作业页面
     jumpToHomework(){
+      sessionStorage.setItem("homeworkId",'');
       this.$router.push({name:'SHomework'});
     },
     //获取课程信息
@@ -140,7 +141,7 @@ export default {
 .header-right{
   position: relative;
     right: 100px;
-    
+
 }
 .header-center span{
   height: 74px;
@@ -151,7 +152,7 @@ export default {
     color: rgba(59,61,69,1);
   padding-bottom: 20px;
   cursor: pointer;
-    
+
 }
 .header-center span:hover{
   border-bottom: 4px solid #2C58AB;

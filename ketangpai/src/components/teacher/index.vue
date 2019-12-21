@@ -13,7 +13,7 @@
         <li class="nav-menu-item item">
           <a>备课区</a>
         </li>
-        <li class="nav-menu-item jingpin item"> 
+        <li class="nav-menu-item jingpin item">
           <a>精品专区</a>
         </li>
         <li class="nav-menu-item item">
@@ -32,7 +32,7 @@
             <span><img src="../../assets/picture/addteacher.png" style="height:32px;width:32px"></img></span>
             <span style="position:relative;bottom:10px">邀请教师</span>
           </a>
-          
+
         </li>
         <li class="nav-menu-item">
           <a>
@@ -54,7 +54,7 @@
         <span><el-button type="primary" @click="hasShow()" id="addCourseButton">+创建/加入课程</el-button></span>
         <span><el-button type="primary" @click="releaseActivity">+快速发布活动</el-button></span>
       </div>
-      
+
     </div>
     <el-divider></el-divider>
     <div class="ktcon-right-button1" id="ktcon-right-button1" style="display:none">
@@ -99,7 +99,7 @@
                 <el-checkbox label="入学年月"></el-checkbox>
               </el-checkbox-group>
             </el-form-item>
-            
+
             <el-form-item style="margin-left: 290px;">
               <el-button type="primary" @click="submitCourse('form')" v-if="operation=='创建课程'">创建</el-button>
               <el-button type="primary" @click="editCourse('form')" v-if="operation == '编辑课程'">确定</el-button>
@@ -166,7 +166,7 @@
                 <ul>
                   <li class="hide2"><a class="stop-course-code" data-code="MDAwMDAwMDAwMLR2vd2Gz7dp" href="">停用</a></li>
                   <li class=""><a class="start-course-code" href="">启用</a></li>
-                  <li class="hide2"><a class="reset-course-code" href="">重置</a></li>                            
+                  <li class="hide2"><a class="reset-course-code" href="">重置</a></li>
                 </ul>
               </div>
             </div>
@@ -203,12 +203,11 @@
               <span v-for="(id,index1) in courseIdList">
                 <a style="cursor:pointer" v-if="id == item.id">{{ homeworkNameList[index1] }}</a>
               </span>
-            </li>      
+            </li>
           </ul>
           <div class="ddfoot clearfix">
             <div class="user-avatar-area">
-              <img src="https://www.ketangpai.com/Public/Common/img/40/29.png">
-              <div class="teachername">sq</div>
+              <div class="teachername" v-for="item in courseMemberList">{{ item}}</div>
             </div>
           </div>
         </dd>
@@ -280,7 +279,7 @@
         <el-form-item>
           <el-button type="primary" icon="el-icon-download">导入作业</el-button>
         </el-form-item>
-        
+
         <el-form-item prop="publishCourseObject" label="发布课程对象">
           <el-select v-model="ruleForm.publishCourseObject" placeholder="请选择要发布到的课程">
             <el-option v-for="(item,index) in courseList" :key="item" :value="index" :label="item">{{item}}</el-option>
@@ -579,7 +578,8 @@ export default {
       },
       homeworkNameList:[],
       courseIdList:[],
-      optionCourseId:[]
+      optionCourseId:[],
+      courseMemberList:[]
     }
   },
   mounted(){
@@ -593,23 +593,31 @@ export default {
     this.getAllTeacherCourse();
     //获取课程作业
     this.getHomeworkName(this.userId);
-
   },
   methods:{
     //获取课程作业
     getHomeworkName(userId){
       this.homeworkNameList = [];
       this.courseIdList = [];
-      this.$axios.get('api/homework/getHomeworkName')
+      this.$axios.get('api/homework/getHomeworkName?userId='+userId)
       .then(res => {
         // console.log("111");
         // console.log(res.data.data);
         for(let i = 0; i < res.data.data.length; i++){
           this.homeworkNameList.push(res.data.data[i].homeworkName);
           this.courseIdList.push(res.data.data[i].courseId);
+          this.getCourseMember(res.data.data[i].courseId);
         }
         // console.log(this.courseIdList);
       })
+    },
+    //获取课程成员
+    getCourseMember(courseId){
+      this.$axios.get('api/course/getCourseMember?courseId='+courseId)
+        .then(res => {
+          this.courseMemberList = res.data;
+          console.log(res.data);
+        })
     },
     //获取教师教授的课程、选择的课程
     getAllTeacherCourse(){
@@ -618,12 +626,13 @@ export default {
       .then(res => {
         this.course = res.data.data;
         this.allCourse = res.data.data;
-        console.log(res.data.data);
+        // console.log(res.data.data);
         for(let i = 0; i <res.data.data.length;i++){
           if(this.userId == res.data.data[i].createrId){
             this.optionCourseId.push(res.data.data[i].id);
           }
         }
+        // console.log(this.optionCourseId);
       })
     },
     //展开选择框
@@ -674,7 +683,7 @@ export default {
             semester:semester,
             conditions:condition,
             createrId:createrId
-          }
+          };
           // console.log(params);
           this.$axios.post('api/course/addCourse',params)
           .then(res =>{
@@ -700,9 +709,9 @@ export default {
       .then(res =>{
         // this.course = res.data.data;
         // this.allCourse = res.data.data;
-        
+
         for(let i = 0; i < this.allCourse.length;i++){
-          console.log(res.data.data[i]);
+          // console.log(res.data.data[i]);
           this.homework = res.data.data[i];
           this.courseList.push(res.data.data[i].courseName);
         }
@@ -782,7 +791,7 @@ export default {
       // console.log(id);
       this.deleteCourseName = courseName;
       this.dialogVisible3 = true;
-      
+
     },
     //取消退课
     resetDeleteKt(){
@@ -798,7 +807,7 @@ export default {
         courseId:courseId,
         password:password,
         userId:userId
-      }
+      };
       // console.log(params);
       this.$axios.post('api/course/deleteCourse',params)
       .then(res =>{
@@ -814,11 +823,11 @@ export default {
           this.courseList.push(this.allCourse[i].courseName);
         }
       }
-      console.log(this.courseList);
+      // console.log(this.courseList);
     },
     //发布作业
     publishHomework(formName){
-      console.log(this.ruleForm.publishCourseObject);
+      // console.log(this.ruleForm.publishCourseObject);
       this.$refs[formName].validate(valid => {
         if(valid){
           let homeworkName = this.ruleForm.homeworkName;
@@ -850,8 +859,8 @@ export default {
             checkAlertValue:checkAlertValue,
             dumplicateCheckRate:duplicateCheckingRate,
             publishCourseObject:courseObject
-          }
-          console.log(".."+params.publishCourseObject);
+          };
+          // console.log(".."+params.publishCourseObject);
           this.$axios.post('api/homework/addHomework',params)
           .then(res =>{
             // console.log(res.data);
@@ -870,7 +879,7 @@ export default {
           })
         }
       })
-     
+
     },
     //格式化时间
     formatDate(date){
@@ -907,7 +916,7 @@ export default {
       if(second < 10){
         second = "0" + second;
       }
-      return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second; 
+      return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
     },
     //跳转到课程详情页面
     jumpToCourse(id){
@@ -928,7 +937,7 @@ export default {
       this.form.courseName = this.allCourse[index].courseName;
       this.form.className = this.allCourse[index].className;
       this.value1 = this.allCourse[index].year;
-      this.value2 = this.allCourse[index].semester;  
+      this.value2 = this.allCourse[index].semester;
       let condition = this.allCourse[index].conditions.split(",");
       for(let i = 0; i < condition.length; i++){
         this.checkList[i] = condition[i];
@@ -1078,11 +1087,11 @@ a {
     height: 99px;
     position: absolute;
     z-index: 10;
-    
+
 }
 .ktcon-right-button1 ul{
   padding-inline-start: 0px;
-  
+
 }
 .ktcon-right-button1 ul li{
   line-height: 39px;
@@ -1134,7 +1143,7 @@ a {
 }
 .publish-test div {
     background: url("../../assets/picture/icon-cs.png") center no-repeat rgba(44,87,171,1);
-    
+
 }
 .activityKind /deep/ .el-dialog__header {
   padding: 0;

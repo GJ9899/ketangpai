@@ -4,7 +4,7 @@
     <div class="top">
       <div class="top-left">
         <el-breadcrumb separator-class="el-icon-arrow-right" class="display">
-          <el-breadcrumb-item :to="{ path: '/student/index' }">课堂</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/student/index' }" @click="jumpToCourse">课堂</el-breadcrumb-item>
           <el-breadcrumb-item>{{course.courseName}}  {{course.className}}</el-breadcrumb-item>
         </el-breadcrumb>
       </div>
@@ -18,7 +18,7 @@
       </div>
     </div>
     <div class="course-header">
-      
+
       <div class="topm-2">
         <div class="topmall" style="margin-left:40px">
           <h1 class="display" style="position:relative;top:20px">{{course.courseName}}</h1>
@@ -45,7 +45,7 @@
               <span class="box-word">成绩</span>
             </span>
           </div>
-  
+
         </div>
       </div>
     </div>
@@ -67,7 +67,7 @@
               <div class="title clearfix">
                 <div class="work-type fl" data-time="1573971575">
                   <span>个人作业</span>
-                  <span>{{item.publishTime}}</span> 
+                  <span>{{item.publishTime}}</span>
                 </div>
               </div>
               <div class="announce-cont clearfix" style="position: relative;">
@@ -77,7 +77,7 @@
                     <div class="p">{{item.introduce}}<a style="color:#318ECB;cursor:pointer;margin-left: 50px;">查看全文&gt;</a></div>
                   </div>
                 </div>
-                
+
               </div>
               <div class="comment-new ">
                 <p data-time="1577030340">截止日期：<span>{{item.endDate}}</span><b>{{item.endTime}}</b></p>
@@ -85,7 +85,7 @@
                   <span>0条讨论</span>
                 </a>
               </div>
-            
+
             </div>
             <div class="uploadwork"><el-button type="primary" @click="jumpToSubmit(item.id)">上传作业</el-button></div>
           </div>
@@ -93,7 +93,7 @@
       </div>
     </div>
 
-    
+
   </div>
 </template>
 <script>
@@ -162,6 +162,9 @@
       //跳转到成绩页面
       jumpToGrade(){
         this.$router.push({name:'SGrade'});
+      },
+      jumpToCourse(){
+        sessionStorage.setItem("courseId",'');
       }
     }
   }

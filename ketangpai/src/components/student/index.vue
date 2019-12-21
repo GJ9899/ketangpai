@@ -71,7 +71,7 @@
                 <ul>
                   <li class="hide2"><a class="stop-course-code" data-code="MDAwMDAwMDAwMLR2vd2Gz7dp">停用</a></li>
                   <li class=""><a class="start-course-code">启用</a></li>
-                  <li class="hide2"><a class="reset-course-code" >重置</a></li>                            
+                  <li class="hide2"><a class="reset-course-code" >重置</a></li>
                 </ul>
               </div>
             </div>
@@ -100,8 +100,8 @@
               <span v-for="(id,index1) in courseIdList">
                 <a v-if="id == item.id">{{ homeworkNameList[index1]}}</a>
               </span>
-            </li>      
-      
+            </li>
+
           </ul>
           <div class="ddfoot clearfix">
             <div class="user-avatar-area">
@@ -175,6 +175,7 @@ export default {
     //获取所以已选课程
     this.getAllCourse();
     this.userId = sessionStorage.getItem("userId");
+    sessionStorage.setItem("courseId",'');
     //获取作业信息
     this.getHomeworkName();
   },
@@ -189,7 +190,7 @@ export default {
           this.courseIdList.push(res.data[i].courseId);
         }
         this.homework = res.data;
-        
+
       })
     },
     //打开添加课程弹窗
@@ -227,7 +228,7 @@ export default {
           this.dialogVisible1 = false;
         }
       })
-      
+
     },
     //获取全部选课
     getAllCourse(){
@@ -423,7 +424,7 @@ a {
     cursor: pointer;
 }
 .ktcon2 dl dt strong a:hover,.ktcon2 dl dt strong a:active{
- 
+
   text-decoration: underline;
 }
 .ktcon2 dl dt strong>span {

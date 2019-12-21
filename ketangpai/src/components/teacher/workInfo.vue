@@ -46,7 +46,7 @@
                 </el-input>
               </span>
             </div>
-            
+
         </div>
       </div>
       <div class="reviewwrap">
@@ -64,7 +64,7 @@
                   <el-checkbox label="未交(1)"></el-checkbox>
                 </el-checkbox-group>
             </dl>
-            
+
             <dl id="sim-classify" class="classify tify">
                 <dt>相似度：</dt>
                 <li id="unlimited" class="cur">不限</li>
@@ -75,7 +75,7 @@
                   <el-checkbox label="90%-100%"></el-checkbox>
                 </el-checkbox-group>
             </dl>
-            
+
             <dl id="state-classify" class="classify tify nodashed">
                 <dt>提交状态：</dt>
                 <li id="unlimited" class="cur">不限</li>
@@ -112,7 +112,7 @@
                     <div class="curBtn addpigai">确定</div>
                 </dl>
             </div>
-            
+
         </div>
 
         <div class="select-group">
@@ -147,7 +147,7 @@
             <span>
               <el-select v-model="givePoints" placeholder="批量给分" class="giveGrade" size="small">
                 <el-option
-                
+
                   v-for="item in options2"
                   :key="item.value"
                   :label="item.label"
@@ -285,6 +285,7 @@ export default {
     },
     //跳转到作业
     jumpToHomework(){
+      sessionStorage.setItem("homeworkId",'');
       this.$router.push({name:'THomework'});
     }
   }
@@ -329,7 +330,7 @@ export default {
 .header-right{
   position: relative;
     right: 100px;
-    
+
 }
 .header-center span{
   height: 74px;
@@ -340,7 +341,7 @@ export default {
     color: rgba(59,61,69,1);
   padding-bottom: 20px;
   cursor: pointer;
-    
+
 }
 .header-center span:hover{
   border-bottom: 4px solid #2C58AB;
@@ -407,7 +408,7 @@ export default {
     color: #999;
     padding-left: 20px;
     cursor: pointer;
-    user-select: none;  
+    user-select: none;
     font-size: 14px;
 }
 .select /deep/ .el-input .el-select__caret{
@@ -437,7 +438,7 @@ export default {
 .classify {
     border-bottom: 1px dashed #eaeaea;
     font-size: 0;flex-direction: column;
-    
+
 }
 .classify dt{
     color: #5A5A5A;
@@ -468,7 +469,7 @@ export default {
     cursor: pointer;
     font-size: 12px;
     text-align: center;
-} 
+}
 .classify el-checkbox {
     padding-left: 25px;
     font-size: 12px;
@@ -507,7 +508,7 @@ input.input-sm {
     height: 20px;
     line-height: 20px;
     border: 1px solid #d2d2d2;
-    
+
 }
 .nStart{
   position: relative;
