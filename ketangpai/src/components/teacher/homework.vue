@@ -8,13 +8,13 @@
           <el-breadcrumb-item>{{ course.courseName}}  {{ course.className}}</el-breadcrumb-item>
         </el-breadcrumb>
       </div>
-      <div class="top-right">
+      <div class="top-right" >
         <span><i class="iconfont iconxiaoxi1" style="font-size: 32px;color: #5F6368;"></i></span>
         <span><img src="../../assets/picture/33 (1).png" style="width:30px;height:30px"></span>
       </div>
     </div>
     <div class="course-header">
-      <div class="topm-1">
+      <div class="topm-1" >
         <span><img src="../../assets/picture/theme.png"></span>
         <span>更改背景</span>
       </div>
@@ -111,8 +111,8 @@
           <span class="commend">0条讨论</span>
         </div>
         </div>
-        
-        <div style="float:right">
+
+        <div style="float:right" >
           <div class="homework-info" >
               <ul>
                   <li class="info-count count1">0</li>
@@ -128,8 +128,12 @@
               </ul>
             </div>
           </div>
+
+        <!--<div class="uploadwork" v-if="course.createrId != userId">-->
+          <!--<el-button type="primary" @click="jumpToSubmit(index)">上传作业</el-button>-->
+        <!--</div>-->
         </div>
-        
+
     </div>
   </div>
 </template>
@@ -139,6 +143,7 @@
     data () {
       return {
         id:'',
+        userId:'',
         course:{
           id:'',
           courseName:'',
@@ -156,18 +161,27 @@
     },
     mounted(){
       let id = sessionStorage.getItem("courseId");
+      let userId = sessionStorage.getItem("userId");
       this.id = id;
-      console.log("id=" + id);
       this.$axios.get('api/course/getCourseById?id='+id)
       .then(res =>{
         this.course = res.data;
-      })
+        console.log(".." + this.course.createrId);
+      });
       //获取课程作业
       this.getHomework(this.id);
       //获取同学数量
       this.getClassmateCount(id);
     },
     methods: {
+      //跳转到提交作业页面
+      jumpToSubmit(index){
+        // console.log(this.homeworkList);
+        let homeworkId = this.homeworkList[index].id;
+        // console.log(homeworkId);
+        sessionStorage.setItem("homeworkId",homeworkId);
+        this.$router.push({name:'SubmitWork'});
+      },
       //获取同学数量
       getClassmateCount(courseId){
         this.$axios.get('api/selectionCourse/getClassmateCount?courseId='+courseId)
@@ -179,7 +193,7 @@
       getHomework(id){
         this.$axios.get('api/homework/getHomeworkById?id='+id)
         .then(res =>{
-          console.log(res.data);
+          // console.log(res.data);
           this.homeworkList = res.data;
         })
       },
@@ -425,7 +439,7 @@
 }
 el-popoper{
   padding: 1px;
-  
+
 }
 el-popper[x-placement^=bottom] {
   margin-top: 1px;

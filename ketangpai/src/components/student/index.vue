@@ -28,7 +28,7 @@
           <i class="iconfont iconxiaoxi1" style="font-size: 32px;color: #5F6368;"></i>
         </li>
         <li class="nav-menu user">
-
+          <img src="../../assets/picture/33 (1).png" style="width:30px;height:30px;position: relative;bottom: 40px;left: 173px;">
         </li>
       </ul>
     </div>
@@ -106,7 +106,7 @@
           <div class="ddfoot clearfix">
             <div class="user-avatar-area">
               <img src="https://www.ketangpai.com/Public/Common/img/40/29.png">
-              <div class="teachername">sq</div>
+              <div class="teachername">{{ teacherNameList[index]}}</div>
             </div>
           </div>
         </dd>
@@ -168,7 +168,8 @@ export default {
       homework:{
         id:'',
         homeworkName:''
-      }
+      },
+      teacherNameList:[]
     }
   },
   mounted(){
@@ -178,8 +179,18 @@ export default {
     sessionStorage.setItem("courseId",'');
     //获取作业信息
     this.getHomeworkName();
+    //获取教师信息
+    this.getTeacherName();
   },
   methods:{
+    //获取教师信息
+    getTeacherName(){
+      this.$axios.get('api/teacher/getTeacherName?studentId='+this.userId)
+        .then(res => {
+          this.teacherNameList = res.data;
+          console.log(res.data);
+        })
+    },
     //获取作业信息
     getHomeworkName(){
       this.$axios.get('api/homework/getStuHomeworkName?studentId=' + this.userId)

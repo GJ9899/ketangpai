@@ -207,7 +207,7 @@
           </ul>
           <div class="ddfoot clearfix">
             <div class="user-avatar-area">
-              <div class="teachername" v-for="item in courseMemberList">{{ item}}</div>
+              <div class="teachername" >{{ courseMemberList[index]}}</div>
             </div>
           </div>
         </dd>
@@ -593,6 +593,7 @@ export default {
     this.getAllTeacherCourse();
     //获取课程作业
     this.getHomeworkName(this.userId);
+
   },
   methods:{
     //获取课程作业
@@ -605,19 +606,29 @@ export default {
         // console.log(res.data.data);
         for(let i = 0; i < res.data.data.length; i++){
           this.homeworkNameList.push(res.data.data[i].homeworkName);
-          this.courseIdList.push(res.data.data[i].courseId);
-          this.getCourseMember(res.data.data[i].courseId);
+          let courseId = res.data.data[i].courseId;
+
+          this.courseIdList.push(courseId);
+          //获取课程成员
+          this.getCourseMember(courseId);
         }
         // console.log(this.courseIdList);
-      })
+      });
+
     },
     //获取课程成员
     getCourseMember(courseId){
-      this.$axios.get('api/course/getCourseMember?courseId='+courseId)
-        .then(res => {
-          this.courseMemberList = res.data;
-          console.log(res.data);
-        })
+      // console.log(this.courseIdList);
+      // for(let i = 0; i <this.courseIdList.length; i++){
+      //   let courseId = this.courseIdList[i];
+      //   console.log(courseId);
+        this.$axios.get('api/student/getStudentName?courseId='+courseId)
+          .then(res => {
+            this.courseMemberList.push(res.data);
+            // console.log(res.data);
+          });
+      // }
+      // console.log(this.courseMemberList);
     },
     //获取教师教授的课程、选择的课程
     getAllTeacherCourse(){
@@ -634,6 +645,7 @@ export default {
         }
         // console.log(this.optionCourseId);
       })
+
     },
     //展开选择框
     hasShow(){
@@ -760,7 +772,7 @@ export default {
       this.$refs[formName].resetFields();
       this.value1 = '';
       this.value2 = '';
-      this.checkList = '';
+      this.checkList = [];
       this.dialogVisible = false;
     },
     //取消发布作业
@@ -939,8 +951,11 @@ export default {
       this.value1 = this.allCourse[index].year;
       this.value2 = this.allCourse[index].semester;
       let condition = this.allCourse[index].conditions.split(",");
+      console.log(condition);
+      console.log(condition.length);
       for(let i = 0; i < condition.length; i++){
         this.checkList[i] = condition[i];
+        console.log(this.checkList[i]);
       }
     },
     //编辑课程
@@ -964,7 +979,7 @@ export default {
             year:year,
             semester:semester,
             conditions:condition
-          }
+          };
           // console.log(params);
           this.$axios.post('api/course/editCourse',params)
           .then(res =>{
@@ -972,7 +987,9 @@ export default {
             if(res.data.message == 'success'){
               this.dialogVisible = false;
               this.getAllTeacherCourse();
+              this.checkList = [];
             }
+
             else{
               Message.warning("修改失败");
             }

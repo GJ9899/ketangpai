@@ -87,7 +87,7 @@
               </div>
 
             </div>
-            <div class="uploadwork"><el-button type="primary" @click="jumpToSubmit(item.id)">上传作业</el-button></div>
+            <div class="uploadwork"><el-button type="primary" @click="jumpToSubmit(index)">上传作业</el-button></div>
           </div>
         </div>
       </div>
@@ -123,7 +123,7 @@
       this.$axios.get('api/course/getCourseById?id='+id)
       .then(res =>{
         this.course = res.data;
-      })
+      });
       //获取课程作业
       this.getHomework(this.id);
       //获取同学数量
@@ -154,8 +154,9 @@
       },
       //跳转到提交作业页面
       jumpToSubmit(index){
+        // console.log(this.homeworkList);
         let homeworkId = this.homeworkList[index].id;
-        console.log(homeworkId);
+        // console.log(homeworkId);
         sessionStorage.setItem("homeworkId",homeworkId);
         this.$router.push({name:'SubmitWork'});
       },

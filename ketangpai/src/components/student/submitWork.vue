@@ -19,7 +19,7 @@
   <div class="gWidth cWidth-new">
     <div class="work-title clearfix">
       <h3>{{ homework.homeworkName}}</h3>
-      <p>截至日期：<span>{{ homework.endDate}}    {{ homework.endTime}}</span></p>
+      <p>截止日期：<span>{{ homework.endDate}}    {{ homework.endTime}}</span></p>
       <p>个人作业</p>
       <p v-if="homework.needCheck == 'true'">需要查重</p>
       <p class="whohandup"><i class="iconfont iconchengyuantuikexinxi1"></i>查看谁交了</p>
@@ -27,17 +27,23 @@
   </div>
   <div class="viewer-handup cWidth-new">
     <div class="sc-tj-box" >
-      <span style="float:left"><el-button type="primary">提交</el-button></span>
-      <span style="float:right;font-size:14px;color:#2d2d2d;">未完成</span>
+      <span style="float:left"><el-button type="primary" @click="addFile">提交</el-button></span>
+      <span style="float:right;font-size:14px;color:#2d2d2d;" v-if="state == '未完成'">未完成</span>
+      <span style="float:right;font-size:14px;color:#2d2d2d;" v-if="state == '已提交'">已提交</span>
     </div>
   </div>
   <div class="homework-box cWidth-new" >
     <div class="uploadbox">
-
+      <div style="position: relative;top: 50px;" v-if="state == '未完成'">
+        <input type="file" id="saveFile" accept="image/png,image/gif,image/jpeg,.xls,.doc,.txt,.pdf,.docx" ref="new_file" style="width: 350px">
+        <input type="text" hidden id="hiddenContent" v-model="fileAddress">
+      </div>
     </div>
     <div class="workMessage">
       <span class="s1">作业留言:</span>
-      <span class="s2">点击添加留言(仅老师可见)...</span>
+      <span class="s2">
+        <el-input placeholder="点击添加留言(仅老师可见)..." v-model="message"></el-input>
+      </span>
     </div>
   </div>
   <div class="homework-log cWidth-new">
@@ -48,6 +54,7 @@
 </template>
 
 <script>
+  import {Message} from 'element-ui'
 export default {
   name: 'SubmitWork',
   data(){
@@ -65,7 +72,10 @@ export default {
         endDate:'',
         endTime:'',
         needCheck:''
-      }
+      },
+      message:'',
+      fileAddress:'',
+      state:'未完成'
     }
   },
   mounted(){
@@ -76,6 +86,91 @@ export default {
     this.getHomework(homeworkId);
   },
   methods:{
+
+    addFile: function () {
+      let self = this;
+
+      if (self.$refs.new_file.files.length !== 0) {
+        let formData = new FormData();
+        formData.append('file_data', self.$refs.new_file.files[0]);
+        console.log(formData);
+        //单个文件进行上传
+        this.$axios.post('api/grade/uploadFile',formData)
+          .then(res => {
+            if(res.data.message == 'success'){
+              let fileAddress = res.data.data;
+              self.fileAddress = fileAddress;
+              this.submitHomework();
+            }
+            else {
+              Message.warning("上传失败");
+            }
+
+            console.log(res.data);
+          });
+      }
+      else{
+        Message.warning("请选择文件");
+      }
+    },
+    //提交作业
+    submitHomework(){
+      let homeworkId = sessionStorage.getItem("homeworkId");
+      let studentId = sessionStorage.getItem("userId");
+      let fileAddress = this.fileAddress;
+      let message = this.message;
+      let submitTime = this.formatDate1(new Date());
+      const params ={
+        homeworkId:homeworkId,
+        studentId:studentId,
+        submitTime:submitTime,
+        message:message,
+        fileAddress:fileAddress
+      };
+      console.log(params);
+      this.$axios.post('api/grade/submitHomework',params)
+        .then(res => {
+          if(res.data.message == 'success'){
+            this.state = '已提交';
+            this.message = '';
+            Message.success("提交成功");
+            this.getSubmitFile();
+          }
+          else{
+            Message.warning("提交失败");
+          }
+          console.log(res.data.message);
+        })
+    },
+    //获取已提交的作业
+    getSubmitFile(){
+
+    },
+    //格式化时间
+    formatDate1(date){
+      let year = date.getFullYear();
+      let month = date.getMonth();
+      let day = date.getDate();
+      if(month < 10){
+        month = "0" + month;
+      }
+      if(day < 10){
+        day = "0" + day;
+      }
+      let hour = date.getHours();
+      if(hour < 10){
+        hour = "0" + hour;
+      }
+      let minute = date.getMinutes();
+      if(minute < 10){
+        minute = "0" + minute;
+      }
+      let second = date.getSeconds();
+      if(second < 10){
+        second = "0" + second;
+      }
+      return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
+    },
     //跳转到作业页面
     jumpToHomework(){
       sessionStorage.setItem("homeworkId",'');
@@ -87,7 +182,7 @@ export default {
       this.$axios.get('api/course/getCourseById?id='+courseId)
       .then(res =>{
         this.course = res.data;
-        console.log(res.data);
+        // console.log(res.data);
       })
     },
     //获取作业信息
@@ -95,7 +190,7 @@ export default {
       this.$axios.get('api/homework/getSubHomeworkbyId?homeworkId='+homeworkId)
       .then(res => {
         this.homework = res.data;
-        console.log(res.data);
+        // console.log(res.data);
       })
     }
   }
@@ -239,7 +334,7 @@ export default {
     word-break: break-all;
     word-wrap: break-word;
         position: relative;
-    top: 32px;
+    top: 20px;
 }
 .log1{
   color: #32BAF0;
