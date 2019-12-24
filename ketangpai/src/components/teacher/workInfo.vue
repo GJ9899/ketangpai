@@ -143,7 +143,7 @@
 
         <div class="glist">
           <div class="head">
-            <span style="margin-left: 20px;position:relative;top:10px"><el-checkbox v-model="selected">已选1/2</el-checkbox></span>
+            <span style="margin-left: 20px;position:relative;top:10px"><el-checkbox v-model="selected">已选1/{{submitCount}}</el-checkbox></span>
             <span>
               <el-select v-model="givePoints" placeholder="批量给分" class="giveGrade" size="small">
                 <el-option
@@ -169,19 +169,32 @@
             <span class="tored">查重率超过60%自动标红</span>
           </div>
           <div class="body">
-            <div class="homeworkmanage">
+            <div class="homeworkmanage" v-for="(item,index) in submittedList">
               <span class="body_1"><el-checkbox v-model="managecheck"></el-checkbox></span>
-              <span class="body_2">11703080302</span>
-              <span class="body_3">刘桂君</span>
-              <span class="body_4">已阅/100</span>
+              <span class="body_2">{{ item.number}}</span>
+              <span class="body_3">{{ item.name }}</span>
+              <span class="body_4" v-if="beginScore[index] != null">
+                {{ item.score}}/{{ item.bestScore}}
+              </span>
+              <span class="body_4" v-else>
+                <el-input class="inputCase" style="width: 57px" v-model="item.score" @blur="addScore(index)" ></el-input>/{{ item.bestScore}}
+              </span>
               <span class="body_5">--</span>
-              <span class="body_4 body_6">19/11/30 15:03</span>
+              <span class="body_4 body_6">{{ item.publishTime}}</span>
               <span class="body_5 body_7">--</span>
               <span class="body_4 body_8">
-                <el-tooltip class="item" effect="dark" content="是指在这门课程里，老师对这位学生所有的批阅次数" placement="top-start"><el-button class="marktime">批阅0次</el-button></el-tooltip>
+                <el-tooltip class="item" effect="dark" content="是指在这门课程里，老师对这位学生所有的批阅次数" placement="top-start">
+                  <el-button class="marktime" v-if="item.score == null">批阅0次</el-button>
+                  <el-button class="marktime" v-else>批阅1次</el-button>
+                </el-tooltip>
               </span>
-              <span class="body_4 body_9">进入批阅</span>
+              <span class="body_4 body_9" @click="readHomework(index)">进入批阅</span>
+              <!--<el-input style="width: 50px"></el-input>-->
+
+
             </div>
+            <!--<iframe src='https://view.officeapps.live.com/op/view.aspx?src=http://localhost:8081/刘桂君.docx' width='100%' height='100%' frameborder='1'>-->
+            <!--</iframe>-->
           </div>
         </div>
 
@@ -244,7 +257,22 @@ export default {
         endTime:'',
         needCheck:''
       },
-      classmateCount:''
+      classmateCount:'',
+      submitCount:'',
+      submittedList:[],
+      submitInfo:{
+        score:'',
+        id:'',
+        name:'',
+        number:'',
+        bestScore:'',
+        publishTime:'',
+        fileAddress:''
+      },
+      read:'未阅',
+      score:'',
+      beginScore:[],
+      state:''
     }
   },
   mounted(){
@@ -257,8 +285,35 @@ export default {
     //获取同学数量
     let courseId = sessionStorage.getItem("courseId");
     this.getClassmateCount(courseId);
+    //获取提价作业的详情
+    this.getSubmitHomework();
   },
   methods:{
+    getScore(index){
+
+    },
+    //添加成绩
+    addScore(index){
+      let gradeId = this.submittedList[index].id;
+      let score = this.submittedList[index].score;
+      const params ={
+        gradeId:gradeId,
+        score:score
+      };
+      console.log(params);
+      this.$axios.post('api/grade/addScore',params)
+        .then(res => {
+          console.log(res.data);
+          if(res.data == 'success'){
+            this.state = 'success';
+          }
+        })
+    },
+    //
+    readHomework(index){
+      this.read = '已阅';
+      window.open(this.submittedList[index].fileAddress);
+    },
     //获取同学数量
       getClassmateCount(courseId){
         this.$axios.get('api/selectionCourse/getClassmateCount?courseId='+courseId)
@@ -280,13 +335,26 @@ export default {
       this.$axios.get('api/homework/getSubHomeworkbyId?homeworkId='+this.homeworkId)
       .then(res =>{
         this.homework = res.data;
-        console.log(res.data);
+        // console.log(res.data);
       })
     },
     //跳转到作业
     jumpToHomework(){
       sessionStorage.setItem("homeworkId",'');
       this.$router.push({name:'THomework'});
+    },
+    //获取提价作业的详情
+    getSubmitHomework(){
+        let homeworkId =sessionStorage.getItem("homeworkId");
+        this.$axios.get('api/grade/getSubmitHomework?homeworkId='+homeworkId)
+          .then(res =>{
+            console.log(res.data);
+            this.submittedList = res.data.data;
+            this.submitCount = res.data.totalCount;
+            for(let i = 0; i <res.data.data.length;i++){
+              this.beginScore.push(res.data.data[i].score);
+            }
+          })
     }
   }
 }
@@ -691,5 +759,11 @@ li{
   color:#606266;
   background: #dcdcdc;
 }
+  .inputCase /deep/ .el-input__inner{
+    height: 26px;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
 </style>
 

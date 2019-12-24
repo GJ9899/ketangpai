@@ -27,22 +27,32 @@
   </div>
   <div class="viewer-handup cWidth-new">
     <div class="sc-tj-box" >
-      <span style="float:left"><el-button type="primary" @click="addFile">提交</el-button></span>
+      <span style="float:left">
+        <el-button type="primary" @click="addFile" v-if="state == '未完成'">提交</el-button>
+        <el-button type="primary" @click="" v-if="state == '已提交'">更新提交</el-button>
+      </span>
       <span style="float:right;font-size:14px;color:#2d2d2d;" v-if="state == '未完成'">未完成</span>
       <span style="float:right;font-size:14px;color:#2d2d2d;" v-if="state == '已提交'">已提交</span>
     </div>
   </div>
   <div class="homework-box cWidth-new" >
     <div class="uploadbox">
-      <div style="position: relative;top: 50px;" v-if="state == '未完成'">
+      <div  v-if="state == '已提交'" style="padding-top: 30px">
+        <el-image :src="picUrl" style="width:100px;height: 100px"></el-image>
+      </div>
+      <div style="position: relative;top: 20px;" v-if="state == '未完成'">
         <input type="file" id="saveFile" accept="image/png,image/gif,image/jpeg,.xls,.doc,.txt,.pdf,.docx" ref="new_file" style="width: 350px">
         <input type="text" hidden id="hiddenContent" v-model="fileAddress">
       </div>
+      <!--<div>-->
+        <!--<el-image :src="picUrl" style="width:100px;height: 100px"></el-image>-->
+      <!--</div>-->
     </div>
     <div class="workMessage">
       <span class="s1">作业留言:</span>
       <span class="s2">
-        <el-input placeholder="点击添加留言(仅老师可见)..." v-model="message"></el-input>
+        <el-input placeholder="点击添加留言(仅老师可见)..." v-model="message" v-if="state == '未完成'"></el-input>
+        <el-input :placeholder="showMessage" v-model="returnMessage" v-else readonly></el-input>
       </span>
     </div>
   </div>
@@ -75,7 +85,9 @@ export default {
       },
       message:'',
       fileAddress:'',
-      state:'未完成'
+      state:'未完成',
+      picUrl:'',
+      returnMessage:'',
     }
   },
   mounted(){
@@ -84,9 +96,16 @@ export default {
     //获取作业信息
     let homeworkId = sessionStorage.getItem("homeworkId");
     this.getHomework(homeworkId);
+    this.getSubmitFile();
   },
   methods:{
-
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url;
+      this.dialogVisible = true;
+    },
+    showMessage(){
+      return ""+this.returnMessage;
+    },
     addFile: function () {
       let self = this;
 
@@ -97,15 +116,9 @@ export default {
         //单个文件进行上传
         this.$axios.post('api/grade/uploadFile',formData)
           .then(res => {
-            if(res.data.message == 'success'){
-              let fileAddress = res.data.data;
+              let fileAddress = res.data;
               self.fileAddress = fileAddress;
               this.submitHomework();
-            }
-            else {
-              Message.warning("上传失败");
-            }
-
             console.log(res.data);
           });
       }
@@ -144,7 +157,26 @@ export default {
     },
     //获取已提交的作业
     getSubmitFile(){
+      const params = {
+        homeworkId:sessionStorage.getItem("homeworkId"),
+        userId:sessionStorage.getItem("userId")
+      };
+      console.log(params);
+      this.$axios.post('api/grade/getFileAddress',params)
+        .then(res => {
+          if(res.data != ''){
+            if(res.data.message == ''){
+              this.returnMessage = '';
+            }
+            else{
+              this.returnMessage = res.data.message;
+            }
+            this.picUrl=res.data.fileAddress;
+            this.state = '已提交';
+          }
 
+          console.log("...."+res.data.message);
+        })
     },
     //格式化时间
     formatDate1(date){
@@ -307,14 +339,14 @@ export default {
     top:65px;
 }
 .uploadbox{
-  height: 80px;
+  height: 103px;
 }
 .workMessage{
   height: 80px;
   border-top: 1px solid #dcdcdc;
   background: #F1F3F4;
   position: relative;
-  top: 50px;
+  top: 82px;
 }
 .s1 {
     font-size: 14px;
@@ -343,6 +375,11 @@ export default {
 }
 .homework-log{
   position: relative;
-  top: 100px;
+  top:135px;
 }
+  .el-upload /deep/.el-upload--picture-card{
+    width: 90px;
+    height: 90px;
+    line-height: 102px;
+  }
 </style>

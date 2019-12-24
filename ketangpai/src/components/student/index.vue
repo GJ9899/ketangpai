@@ -25,10 +25,12 @@
           </a>
         </li>
         <li class="nav-menu-item">
-          <i class="iconfont iconxiaoxi1" style="font-size: 32px;color: #5F6368;"></i>
+          <el-badge :value="3" class="item">
+            <el-button size="small" @click="showInformation()">通知</el-button>
+          </el-badge>
         </li>
         <li class="nav-menu user">
-          <img src="../../assets/picture/33 (1).png" style="width:30px;height:30px;position: relative;bottom: 40px;left: 173px;">
+          <img src="../../assets/picture/33 (1).png" style="width:30px;height:30px;position: relative;bottom: 40px;left: 209px;">
         </li>
       </ul>
     </div>
@@ -169,7 +171,8 @@ export default {
         id:'',
         homeworkName:''
       },
-      teacherNameList:[]
+      teacherNameList:[],
+      informationCount:5
     }
   },
   mounted(){
@@ -183,6 +186,10 @@ export default {
     this.getTeacherName();
   },
   methods:{
+    //获取消息数量
+    getInformationCount(){
+      return this.informationCount+"";
+    },
     //获取教师信息
     getTeacherName(){
       this.$axios.get('api/teacher/getTeacherName?studentId='+this.userId)
