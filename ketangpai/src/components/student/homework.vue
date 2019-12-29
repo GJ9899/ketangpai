@@ -87,7 +87,10 @@
               </div>
 
             </div>
-            <div class="uploadwork"><el-button type="primary" @click="jumpToSubmit(index)">上传作业</el-button></div>
+            <div class="uploadwork">
+              <el-button type="primary"  v-if="item.id == homeworkIdList[index]">已提交</el-button>
+              <el-button type="primary" @click="jumpToSubmit(index)" v-else>上传作业</el-button>
+            </div>
           </div>
         </div>
       </div>
@@ -114,10 +117,14 @@
           addCode:''
         },
         homeworkList:{},
-        classmateCount:''
+        classmateCount:'',
+        state:[],
+        homeworkIdList:[],
       }
     },
     mounted(){
+      this.state = [];
+      this.homeworkIdList = [];
       let id = sessionStorage.getItem("courseId");
       this.id = id;
       this.$axios.get('api/course/getCourseById?id='+id)
@@ -128,8 +135,31 @@
       this.getHomework(this.id);
       //获取同学数量
       this.getClassmateCount(id);
+      //查看作业是否提交
+      // this.isSubmitHomework();
     },
     methods: {
+      //查看作业是否提交
+      isSubmitHomework(homeworkId){
+        let userId = sessionStorage.getItem("userId");
+        const params = {
+          homeworkId:homeworkId,
+          userId:userId
+        };
+        // console.log(params);
+        this.$axios.post('api/homework/isSubmitHomework',params)
+          .then(res =>{
+            console.log("++" + res.data);
+            this.homeworkIdList.push(res.data);
+            if(res.data != "false"){
+              this.state.push('未提交');
+            }
+            else{
+              this.state.push('已提交');
+            }
+
+          })
+      },
       //获取同学数量
       getClassmateCount(courseId){
         this.$axios.get('api/selectionCourse/getClassmateCount?courseId='+courseId)
@@ -142,7 +172,15 @@
         this.$axios.get('api/homework/getHomeworkById?id='+id)
         .then(res =>{
           this.homeworkList = res.data;
+          for(let i = 0; i < this.homeworkList.length; i++){
+            let homeworkId = this.homeworkList[i].id;
+            console.log("---"+homeworkId);
+            this.isSubmitHomework(homeworkId);
+            // this.homeworkIdList.push(this.homeworkList[i].id);
+          }
+
         })
+        // console.log(".."+this.state[0]);
       },
       //进入作业详情
       jumpToHomeworkId(){

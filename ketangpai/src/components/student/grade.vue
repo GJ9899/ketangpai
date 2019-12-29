@@ -3,7 +3,7 @@
     <div class="header">
       <div class="header-left">
         <span class="header-icon" @click="jumpToHomework"><i class="iconfont iconfanhui" style="font-size:38px;color:#5F6368;"></i></span>
-        <span class="courseName" @click="jumpToHomework">六级英语</span>
+        <span class="courseName" @click="jumpToHomework">{{ courseName}}</span>
       </div>
       <div class="header-center">
         <span @click="jumpToClassmate">同学</span>
@@ -27,7 +27,21 @@
           <a class="finals" data-area="final-Area" tabindex="1">期末成绩</a>
         </div>
         <div class="gradePage">
+          <div class="total-box">
+            <h2>作业成绩</h2>
+            <p>
+              <span>已批 {{ checkedCount }}</span>
+              <span>未批  {{ unCheckCount}}</span>
+              <span>未交 {{ parseInt(homeworkList.length) - parseInt(checkedCount) - parseInt(unCheckCount)}}</span>
+            </p>
+          </div>
 
+          <div class="scoreList" v-for="(item,index) in homeworkList">
+            <span>{{ item.publishTime }}</span>&nbsp&nbsp&nbsp&nbsp
+            <span style="width: 150px;color: #2d2d2d;">{{ item.homeworkName }}</span>&nbsp&nbsp&nbsp&nbsp
+            <span v-if="item.score == null">____/{{item.bestScore}}</span>
+            <span v-else>{{ item.score}}/{{item.bestScore}}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -39,10 +53,69 @@ export default {
   name:'SGrade',
   data(){
     return{
-
+      homeworkList:[],
+      unCheckCount:'',
+      checkedCount:'',
+      unsubmitCount:'',
+      courseName:''
     }
   },
+  mounted(){
+    this.getAllHomework();
+    this.getUncheckCount();
+    this.getCheckedCount();
+    // this.getUnSubmitCount();
+    this.getCourseName();
+  },
   methods:{
+    getCourseName(){
+      let courseId = sessionStorage.getItem("courseId");
+      this.$axios.get('api/course/getCourseById?id='+courseId)
+        .then(res =>{
+          this.courseName = res.data.courseName;
+        })
+    },
+    //获取未交作业数量
+    //获取已批改作业数量
+    getCheckedCount(){
+      let userId = sessionStorage.getItem("userId");
+      let courseId = sessionStorage.getItem("courseId");
+      const params = {
+        userId:userId,
+        courseId:courseId
+      };
+      this.$axios.post('api/grade/getCheckedCount',params)
+        .then(res =>{
+          this.checkedCount = res.data;
+        })
+    },
+    //获取未批改作业数量
+    getUncheckCount(){
+      let userId = sessionStorage.getItem("userId");
+      let courseId = sessionStorage.getItem("courseId");
+      const params = {
+        userId:userId,
+        courseId:courseId
+      };
+      this.$axios.post('api/grade/getUncheckCount',params)
+        .then(res =>{
+          this.unCheckCount = res.data;
+        })
+    },
+    //获取所有作业
+    getAllHomework(){
+      let userId = sessionStorage.getItem("userId");
+      let courseId = sessionStorage.getItem("courseId");
+      const params = {
+        userId:userId,
+        courseId:courseId
+      };
+      this.$axios.post('api/homework/getAllHomework',params)
+        .then(res=>{
+          this.homeworkList = res.data;
+          console.log(res.data);
+        })
+    },
     //跳转到同学页面
     jumpToClassmate(){
       this.$router.push({name:'SClassmate'});
@@ -88,7 +161,7 @@ export default {
 .header-right{
   position: relative;
     right: 100px;
-    
+
 }
 .header-center span{
   height: 74px;
@@ -99,7 +172,7 @@ export default {
     color: rgba(59,61,69,1);
   padding-bottom: 20px;
   cursor: pointer;
-    
+
 }
 .header-center span:hover{
   border-bottom: 4px solid #2C58AB;
@@ -115,7 +188,7 @@ export default {
     padding: 20px 0 20px 1px;
     border: 1px solid #c8c8c8;
     border-bottom-color: #dcdcdc;
-    text-align: center;
+    /*text-align: center;*/
     /* font-size: 0; */
 }
 .perform-group-title a{
@@ -144,12 +217,41 @@ export default {
 .gradePage{
   height: 517px;
     width: 978px;
-    margin: 23px auto;
+    /*margin: 23px auto;*/
     border: 1px solid #c8c8c8;
     border-top: none;
     min-height: 516px;
     position: relative;
     right: 2px;
 }
+.total-box {
+  display: inline-block;
+  vertical-align: top;
+  width: 39%;
+  margin-top: 40px;
+  margin-left: 55px;
+}
+.total-box h2 {
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 1;
+  padding-bottom: 5px;
+}
+.total-box span {
+  font-size: 14px;
+  color: #aaa;
+  padding-right: 10px;
+}
+  .scoreList{
+    width: 478px;
+    margin-left: 500px;
+    /* margin-bottom: 50px; */
+    position: relative;
+    top: -35px;
+    color: #aaa;
+  }
+  .scoreList span{
+    line-height: 50px;
+  }
 </style>
 

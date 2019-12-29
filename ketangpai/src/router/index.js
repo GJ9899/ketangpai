@@ -15,6 +15,7 @@ import CourseMember from '@/components/teacher/courseMember'
 import SubmitWork from '@/components/student/submitWork'
 import SClassmate from '@/components/student/classmate'
 import SGrade from '@/components/student/grade'
+import TSubmitWork from '@/components/student/submitWork'
 Vue.use(Router)
 
 export default new Router({
@@ -104,6 +105,14 @@ export default new Router({
       path:'/student/submitWork',
       name:'SubmitWork',
       component:SubmitWork,
+      meta:{
+        requireAuth:true
+      }
+    },
+    {
+      path:'/teacher/submitWork',
+      name:'TSubmitWork',
+      component:TSubmitWork,
       meta:{
         requireAuth:true
       }

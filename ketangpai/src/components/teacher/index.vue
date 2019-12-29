@@ -206,7 +206,7 @@
             </li>
           </ul>
           <div class="ddfoot clearfix">
-            <div class="user-avatar-area">
+            <div class="user-avatar-area" >
               <div class="teachername" >{{ courseMemberList[index]}}</div>
             </div>
           </div>
@@ -216,14 +216,14 @@
     <!--退课弹窗-->
     <el-dialog :visible.sync="dialogVisible3" class="deleteKt" width="30%">
       <div class="" style="position:relative;bottom:20px">
-        <p class="deleteKt1">确定要退课{{deleteCourseName}}吗？</p>
+        <p class="deleteKt1">确定要删除{{deleteCourseName}}吗？</p>
         <p class="deleteKt2">您的这个课程的任何信息或评论将被永久删除</p>
         <p class="deleteKt3" style="color:red">警告：此操作无法撤销</p>
         <p class="deleteKt4" style="color:blue">提醒：已用课程数包含“删除课程数”</p>
         <el-input placeholder="请输入登录密码验证" class="deleteKt5" v-model="deleteKt5"></el-input>
         <div class="deleteKt6">
           <el-button @click="resetDeleteKt">取消</el-button>
-          <el-button type="primary" @click="deleteKt">退课</el-button>
+          <el-button type="primary" @click="deleteKt">删除</el-button>
         </div>
       </div>
     </el-dialog>
@@ -625,7 +625,7 @@ export default {
         this.$axios.get('api/student/getStudentName?courseId='+courseId)
           .then(res => {
             this.courseMemberList.push(res.data);
-            // console.log(res.data);
+            console.log(res.data[0]);
           });
       // }
       // console.log(this.courseMemberList);
@@ -797,20 +797,22 @@ export default {
     kdcgb(index){
       return "kdcgb"+index;
     },
-    //退课
+    //删除课
     deleteCourse(courseName,id){
       this.courseId = id;
+      sessionStorage.setItem("courseId",id);
       // console.log(id);
       this.deleteCourseName = courseName;
       this.dialogVisible3 = true;
 
     },
-    //取消退课
+    //取消删除课
     resetDeleteKt(){
+      sessionStorage.setItem("courseId",'');
       this.deleteKt5 = '';
       this.dialogVisible3 = false;
     },
-    //确认退课
+    //确认删除课
     deleteKt(){
       let password = this.deleteKt5;
       let courseId = this.courseId;
@@ -821,10 +823,25 @@ export default {
         userId:userId
       };
       // console.log(params);
-      this.$axios.post('api/course/deleteCourse',params)
+      this.$axios.post('api/teacher/deleteCourse',params)
       .then(res =>{
-        // console.log(res.data);
+        console.log(res.data);
+        if(res.data== 'success'){
+          Message.success("删除课程成功");
+          this.dialogVisible3 = false;
+          this.getAllTeacherCourse();
+          this.getHomeworkName(this.userId);
+        }
+        else if(res.data == 'false'){
+          Message.error("删除课程失败")
+          this.dialogVisible3 = false;
+        }
+        else{
+          Message.error("输入登录密码不正确");
+          this.deleteKt5 = '';
+        }
       })
+      sessionStorage.setItem("courseId",'');
     },
     //发布作业弹窗
     hasPublishHomework(){

@@ -25,15 +25,39 @@
           </a>
         </li>
         <li class="nav-menu-item">
-          <el-badge :value="3" class="item">
+          <!--<el-badge :value="0" class="item">-->
             <el-button size="small" @click="showInformation()">通知</el-button>
-          </el-badge>
+          <!--</el-badge>-->
         </li>
         <li class="nav-menu user">
           <img src="../../assets/picture/33 (1).png" style="width:30px;height:30px;position: relative;bottom: 40px;left: 209px;">
         </li>
       </ul>
     </div>
+
+    <!--消息框-->
+    <el-dialog
+      title="通知"
+      :visible.sync="dialogVisible5"
+      width="40%">
+      <el-table :data="tableData">
+        <el-table-column
+          prop="publishTime"
+          label="日期"
+          width="180">
+        </el-table-column>
+        <el-table-column
+          prop="courseName"
+          label="课程名"
+          width="180">
+        </el-table-column>
+        <el-table-column
+          prop="homeworkName"
+          label="作业名">
+        </el-table-column>
+      </el-table>
+    </el-dialog>
+
     <div class="ktcon" style="height: 55px;">
       <div class="ktcon-left">
         <p>全部课程</p>
@@ -91,7 +115,7 @@
             <i></i>
           </a>
           <ul class="kdcgd" :id="kdcgb(index)">
-            <li class="kdli3" id="kdli3" @click="deleteCourse">退课</li>
+            <li class="kdli3" id="kdli3" @click="deleteCourse(item.id)">退课</li>
             <li class="kdli2" id="kdli2" @click="">归档</li>
           </ul>
         </dt>
@@ -147,10 +171,12 @@ export default {
   name: 'SIndex',
   data(){
     return{
+      tableData:[],
       dialogVisible1:false,
       courseIdentifyCase:'',
       dialogVisible3:false,
       dialogVisible4:false,
+      dialogVisible5:false,
       deleteKt5:'',
       userId:'',
       course:{
@@ -195,14 +221,14 @@ export default {
       this.$axios.get('api/teacher/getTeacherName?studentId='+this.userId)
         .then(res => {
           this.teacherNameList = res.data;
-          console.log(res.data);
+          // console.log(res.data);
         })
     },
     //获取作业信息
     getHomeworkName(){
       this.$axios.get('api/homework/getStuHomeworkName?studentId=' + this.userId)
       .then(res => {
-        console.log(res.data);
+        // console.log(res.data);
         for(let i = 0; i < res.data.length; i++){
           this.homeworkNameList.push(res.data[i].homeworkName);
           this.courseIdList.push(res.data[i].courseId);
@@ -228,10 +254,10 @@ export default {
         addCode:identifyCourse,
         selecterId:selecterId
       }
-      console.log("..."+selecterId);
+      // console.log("..."+selecterId);
       this.$axios.post('api/selectionCourse/selectCourse',params)
       .then(res => {
-        console.log(res.data);
+        // console.log(res.data);
         if(res.data.message == '你已经选了这门课程'){
           Message.warning("你已选过此课程");
         }
@@ -254,7 +280,7 @@ export default {
       this.$axios.get('api/selectionCourse/getAllCourse?selecterId='+selecterId)
       .then(res =>{
         this.course = res.data.data;
-        console.log(res.data);
+        // console.log(res.data);
       })
     },
     kdcgb(index){
@@ -276,19 +302,50 @@ export default {
       }
     },
     //退课
-    deleteCourse(){
+    deleteCourse(courseId){
+      sessionStorage.setItem("courseId",courseId);
       this.dialogVisible3 = true;
     },
     //取消退课
     resetDeleteKt(){
+      sessionStorage.setItem("courseId",'');
       this.deleteKt5 = '';
       this.dialogVisible3 = false;
     },
     //确认退课
     deleteKt(){
       let password = this.deleteKt5;
-      this.deleteKt5 = '';
-      this.dialogVisible3 = false;
+      let courseId = sessionStorage.getItem("courseId");
+      let userId = sessionStorage.getItem("userId");
+      const params = {
+        password:password,
+        courseId:courseId,
+        userId:userId
+      };
+      this.$axios.post('api/student/deleteCourse',params)
+        .then(res => {
+          // console.log(res.data);
+          if(res.data.message == 'success'){
+            Message.success("退课成功");
+            this.deleteKt5 = '';
+            this.dialogVisible3 = false;
+            this.getAllCourse();
+            this.getHomeworkName();
+            this.getTeacherName();
+
+          }
+          else if(res.data.message == 'false'){
+            Message.error("退课失败");
+            this.deleteKt5 = '';
+            this.dialogVisible3 = false;
+          }
+          else{
+            Message.error("输入登录密码有误");
+            this.deleteKt5 = '';
+          }
+          // console.log(res.data);
+        });
+
     },
     //打开归档对话框
     openpigeonholeCase(){
@@ -301,6 +358,15 @@ export default {
     //确认归档
     pigeonhole(){
 
+    },
+    //显示消息
+    showInformation(){
+      this.$axios.get('api/information/getInformation?userId='+sessionStorage.getItem("userId"))
+        .then(res =>{
+          console.log(res.data);
+          this.tableData = res.data;
+        });
+     this.dialogVisible5 = true;
     }
   }
 }

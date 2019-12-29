@@ -143,7 +143,7 @@
 
         <div class="glist">
           <div class="head">
-            <span style="margin-left: 20px;position:relative;top:10px"><el-checkbox v-model="selected">已选1/{{submitCount}}</el-checkbox></span>
+            <span style="margin-left: 20px;position:relative;top:10px"><el-checkbox v-model="selected">已选0/{{submitCount}}</el-checkbox></span>
             <span>
               <el-select v-model="givePoints" placeholder="批量给分" class="giveGrade" size="small">
                 <el-option
@@ -170,7 +170,7 @@
           </div>
           <div class="body">
             <div class="homeworkmanage" v-for="(item,index) in submittedList">
-              <span class="body_1"><el-checkbox v-model="managecheck"></el-checkbox></span>
+              <span class="body_1"><el-checkbox v-model="item.id"></el-checkbox></span>
               <span class="body_2">{{ item.number}}</span>
               <span class="body_3">{{ item.name }}</span>
               <span class="body_4" v-if="beginScore[index] != null">
@@ -189,6 +189,8 @@
                 </el-tooltip>
               </span>
               <span class="body_4 body_9" @click="readHomework(index)">进入批阅</span>
+              <!--<a href="#" onclick="javascript:window.open('http://localhost:8081/刘桂君.docx');"> 在线预览 </a>-->
+
               <!--<el-input style="width: 50px"></el-input>-->
 
 

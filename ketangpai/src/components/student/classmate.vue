@@ -3,7 +3,7 @@
     <div class="header">
       <div class="header-left">
         <span class="header-icon" @click="jumpToHomework"><i class="iconfont iconfanhui" style="font-size:38px;color:#5F6368;"></i></span>
-        <span class="courseName">六级英语</span>
+        <span class="courseName" @click="jumpToHomework">{{ courseName }}</span>
       </div>
       <div class="header-center">
         <span>同学</span>
@@ -15,28 +15,28 @@
         <span><img src="../../assets/picture/33 (1).png" style="width:30px;height:30px"></span>
       </div>
     </div>
-    
+
     <div class="member-cont">
       <div class="box-l">
         <div class="box-group" @click="displayTeam" tabindex="1">教学团队(1)</div>
-        <div class="box-group" @click="displayStudent" tabindex="1">全部学生(学生2)</div>
+        <div class="box-group" @click="displayStudent" tabindex="1">全部学生(学生{{ studentList.length}})</div>
       </div>
       <!--全部学生-->
-      <div class="box-r" v-model="role" v-if="this.role=='student'">
+      <div class="box-r" v-model="role" v-if="this.role=='student'" >
         <div class="r-name">
-          <div><p style="margin-left:20px;color: rgba(59,61,69,1);">全部学生(学生2)</p></div>
+          <div><p style="margin-left:20px;color: rgba(59,61,69,1);">全部学生(学生{{ studentList.length }})</p></div>
           <div style="padding-right:30px;padding-top: 10px;">
             <el-input placeholder="姓名/学号" class="addTeacher" v-model="name"></el-input>
           </div>
         </div>
-  
+
         <!--成员列表-->
-        <div class="data">
+        <div class="data" v-for="(item,index) in studentList">
           <span><img src="../../assets/picture/25.png" class="avator"></img></span>
-          <span class="stuno">11703080320</span>
-          <span class="name">sunqin</span>
-          <span class="mail">1370097791@qq.com</span>
-          <span class="natureclass">117030803</span>
+          <!--<span class="stuno">{{ item.name}}</span>-->
+          <span class="name">{{ item.name}}</span>
+          <span class="mail">{{ item.phoneMail}}</span>
+          <span class="natureclass">{{ item.number}}</span>
           <span class="createtime">19/11/29 21:15</span>
         </div>
       </div>
@@ -48,8 +48,8 @@
         </div>
         <div class="data">
           <span><img src="../../assets/picture/25.png" class="avator" style="margin-left:40px"></img></span>
-          <span class="name">刘桂君</span>
-            <span class="mail" style="margin-left:280px">1370097791@qq.com</span>
+          <span class="name">{{ teacher.name }}</span>
+            <span class="mail" style="margin-left:280px">{{ teacher.phoneMail }}</span>
             <span class="identity">(管理员)</span>
           </div>
       </div>
@@ -59,7 +59,6 @@
     </div>
   </div>
 
-  </div>
 </template>
 
 <script>
@@ -69,11 +68,57 @@ export default {
     return{
       input2:'',
       checkAll:false,
-      role:'student',
-      name:''
+      role:'team',
+      name:'',
+      teacher:{
+        id:'',
+        name:'',
+        phoneMail:''
+      },
+      student:{
+        id:'',
+        name:'',
+        number:'',
+        phoneMail:'',
+      },
+      studentList:[],
+      courseName:'',
     }
   },
+  mounted(){
+    //获取课程信息
+    this.getCourseById();
+    //获取课程教师信息
+    this.getTeacherInfo();
+    //获取课程同学信息
+    this.getClassmateInfo();
+  },
   methods:{
+    //获取课程信息
+    getCourseById(){
+      let id = sessionStorage.getItem("courseId");
+      this.$axios.get('api/course/getCourseById?id='+id)
+        .then(res => {
+          this.courseName = res.data.courseName;
+          console.log(res.data);
+        })
+    },
+    //获取课程同学信息
+    getClassmateInfo(){
+      let courseId = sessionStorage.getItem("courseId");
+      this.$axios.get('api/student/getStudentList?courseId=' + courseId)
+        .then(res => {
+          this.studentList = res.data;
+        })
+    },
+    //获取课程教师信息
+    getTeacherInfo(){
+      let courseId = sessionStorage.getItem("courseId");
+      this.$axios.get('api/teacher/getTeacherInfo?courseId='+courseId)
+        .then(res => {
+          this.teacher = res.data;
+        })
+    },
     //显示教学团队
     displayTeam(){
       this.role = 'team';
@@ -84,7 +129,7 @@ export default {
     },
     //跳转到作业
     jumpToHomework(){
-      this.$router.push({name:'Homework'});
+      this.$router.push({name:'SHomework'});
     },
     //跳转到成绩页面
     jumpToGrade(){
@@ -126,7 +171,7 @@ export default {
 .header-right{
   position: relative;
     right: 100px;
-    
+
 }
 .header-center span{
   height: 74px;
@@ -137,7 +182,7 @@ export default {
     color: rgba(59,61,69,1);
   padding-bottom: 20px;
   cursor: pointer;
-    
+
 }
 .header-center span:hover{
   border-bottom: 4px solid #2C58AB;
@@ -270,7 +315,7 @@ export default {
 }
 .name{
   font-size: 14px;
-    margin-left: 26px;
+    margin-left: 70px;
     position: relative;
     bottom: 3px;
 }
@@ -282,13 +327,13 @@ export default {
 }
 .natureclass{
   font-size: 14px;
-    margin-left: 25px;
+    margin-left: 60px;
     position: relative;
     bottom: 3px;
 }
 .createtime{
       font-size: 14px;
-    margin-left: 25px;
+    margin-left: 60px;
     position: relative;
     bottom: 3px;
 }
